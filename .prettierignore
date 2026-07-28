@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.turbo/
+dist/
+out/
+build/
+coverage/
+output/
+package-lock.json
+
+# Source-of-truth documents — keep byte-stable, do not reflow.
+PROMPT.md
+CLAUDE.md
+data/

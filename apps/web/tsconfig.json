@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "jsx": "preserve",
+    "incremental": true,
+    // Explicit: automatic @types discovery does not reach the hoisted root
+    // node_modules/@types from a nested workspace.
+    "types": ["node"],
+    "plugins": [{ "name": "next" }],
+    // No baseUrl: deprecated in TS 6. `paths` resolves relative to this file.
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

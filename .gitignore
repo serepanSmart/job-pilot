@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.npm/
+
+# secrets — this repo is PRIVATE, but never commit real credentials
+.env
+.env.*
+!.env.example
+
+# generated applications (tailored CVs / cover letters — personal data)
+output/
+
+# local pipeline state
+data/state/
+
+# build output
+.next/
+.turbo/
+dist/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# hosting
+.vercel
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
