@@ -13,6 +13,9 @@ output/
 # local pipeline state
 data/state/
 
+# CodeMie CLI drops per-session analytics here when running via `jobpilot`
+docs/codemie/
+
 # build output
 .next/
 .turbo/

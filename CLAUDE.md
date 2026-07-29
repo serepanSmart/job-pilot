@@ -134,6 +134,17 @@ must be built before the first real scoring call. Phase 2 needs no LLM at all.
 
 Cost if the API-key path is chosen: see DEPLOY.md "LLM cost".
 
+### Interactive sessions: launch with `jobpilot`, never plain `claude`
+
+Decided 2026-07-29. Sessions for this repo run through the EPAM CodeMie gateway
+in an isolated `CLAUDE_CONFIG_DIR` (`~/.claude-jobpilot`), so the Unity
+Enterprise seat is neither billed nor sent telemetry. The launcher is the zsh
+function `jobpilot`; plain `claude`, the VS Code panel, and bare
+`codemie-claude` all leak to Unity in one way or another.
+
+**Full rationale, verification steps, and failure modes: `RUNNING.md`.** Read it
+before changing anything about how sessions are started.
+
 ## Commands
 
 All verified working as of Phase 0. Run from the repo root.
