@@ -138,8 +138,8 @@ Cost if the API-key path is chosen: see DEPLOY.md "LLM cost".
 
 Decided 2026-07-29. Sessions for this repo run through the EPAM CodeMie gateway
 in an isolated `CLAUDE_CONFIG_DIR` (`~/.claude-jobpilot`), so the Unity
-Enterprise seat is neither billed nor sent telemetry. The launcher is the zsh
-function `jobpilot`; plain `claude`, the VS Code panel, and bare
+Enterprise seat is neither billed nor sent telemetry. The launcher is the
+executable script `~/.local/bin/jobpilot`; plain `claude`, the VS Code panel, and bare
 `codemie-claude` all leak to Unity in one way or another.
 
 **Full rationale, verification steps, and failure modes: `RUNNING.md`.** Read it

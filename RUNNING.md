@@ -11,9 +11,16 @@ cd ~/Documents/Job\ search
 jobpilot
 ```
 
-`jobpilot` is a zsh function defined in `~/.zshrc` (outside git — it holds no
-secrets, but it is machine-local). It is the *only* approved way to open a
-Claude Code session for this repo.
+`jobpilot` is an executable script at `~/.local/bin/jobpilot` (outside git — it
+holds no secrets, but it is machine-local). It is the *only* approved way to open
+a Claude Code session for this repo.
+
+**It is deliberately a script, not a shell function.** A function is captured
+when `~/.zshrc` is sourced, so every already-open terminal keeps running whatever
+version was current at that moment — and the earlier versions of this launcher
+called plain `claude`, i.e. the Unity seat, with no visible sign beyond a missing
+CodeMie banner. A script is re-read on every invocation. If `type -a jobpilot`
+reports a function, that is a leftover: `unfunction jobpilot; hash -r`.
 
 Arguments pass straight through: `jobpilot -c` (continue), `jobpilot -p "…"`
 (print mode), `jobpilot --model …`.
@@ -40,22 +47,11 @@ Note the ⚠️ row: running `codemie-claude` by hand is *not* equivalent to
 
 ## What the launcher does, and why each line matters
 
-```bash
-jobpilot() {
-  ( unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
-    unset CLAUDE_CODE_ENABLE_TELEMETRY OTEL_EXPORTER_OTLP_ENDPOINT OTEL_EXPORTER_OTLP_PROTOCOL
-    unset OTEL_METRICS_EXPORTER OTEL_LOGS_EXPORTER OTEL_RESOURCE_ATTRIBUTES OTEL_LOG_TOOL_DETAILS
-    if ! codemie profile status 2>/dev/null | grep -q '✓ Authenticated'; then
-      print -u2 "jobpilot: CodeMie SSO expired — opening browser to re-authenticate…"
-      codemie profile refresh || {
-        print -u2 "jobpilot: refresh failed. Run: codemie profile login"
-        exit 1
-      }
-    fi
-    CLAUDE_CONFIG_DIR="$HOME/.claude-jobpilot" CODEMIE_CONV_SYNC_DISABLED=1 \
-      codemie-claude "$@" )
-}
-```
+Source of truth is `~/.local/bin/jobpilot`; in short it unsets the work
+credentials and the Unity OTEL variables, checks the SSO token, exports
+`CLAUDE_CONFIG_DIR`, `CODEMIE_CONV_SYNC_DISABLED=1`, `CODEMIE_METRICS_DISABLED=1`
+and `DISABLE_AUTOUPDATER=1`, warns if an `oauthAccount` ever appears in the
+isolated profile, then `exec codemie-claude "$@"`.
 
 - **`unset ANTHROPIC_API_KEY`** — the Unity work key is exported from
   `~/.zshrc:2`. Credential precedence is `ANTHROPIC_API_KEY` →
@@ -136,8 +132,51 @@ The session banner is the fastest check of all — it must print
 |---|---|---|
 | Browser opens on launch | SSO token expired (24h lifetime) | expected once a day; finish the SSO flow |
 | `refresh failed. Run: codemie profile login` | refresh token dead | `codemie profile login` |
-| Claude Code asks you to log in to Anthropic | gateway supplied no token — you are one step away from using a personal/Unity account | quit, fix the profile, do **not** log in |
+| “Select login method: 1. Claude account… 2. Anthropic Console… 3. 3rd-party platform” | **first-run onboarding wizard**, not an auth failure. A fresh `CLAUDE_CONFIG_DIR` has no `hasCompletedOnboarding`, and the wizard asks for a login even though the gateway token is present. `-p`/print mode skips the wizard, which is why it only shows up on the first interactive launch. | Ctrl+C, then set the flag (below), then relaunch. Never pick an option — each one attaches an account to this profile |
+| Claude Code asks you to log in *after* onboarding is done | gateway supplied no token — you are one step away from using a personal/Unity account | quit, check `codemie profile status`, do **not** log in |
 | Session banner shows no CodeMie URL | you started plain `claude`, not `jobpilot` | quit and relaunch |
+| `Not logged in · Please run /login`, and no CodeMie banner appeared | the wrapper never ran, so no gateway token was injected and plain `claude` started in the isolated profile. Nothing is billed — the request just fails. Two known causes: a leftover shell **function** shadowing the script (`type -a jobpilot`), or the **version prompt** below aborting the wrapper. | `unfunction jobpilot; hash -r`, then check the pinned version. Do **not** log in |
+| `⚠️ WARNING: You are running Claude Code v2.1.220 / CodeMie has only tested v2.1.218` + `What would you like to do?` | Claude Code auto-updated itself past the version CodeMie 0.10.1 verifies. Interactively it blocks on that prompt; non-interactively it crashes with `ERR_USE_AFTER_CLOSE`. Either way the session can end up on plain `claude`. | re-pin the version (below) |
+
+### Claude Code version must stay pinned to what CodeMie verifies
+
+CodeMie CLI 0.10.1 verifies **Claude Code 2.1.218**. `~/.local/bin/claude` is a
+symlink shared with work sessions, and Claude Code auto-updates itself — on
+2026-07-29 a plain `claude` run bumped it to 2.1.220 at 22:27, which broke
+`jobpilot` in exactly the confusing way described in the failure table.
+
+`DISABLE_AUTOUPDATER=1` in the launcher stops **jobpilot** sessions from bumping
+it, but a Unity work session still can. To re-pin (no download needed if the
+version is already on disk):
+
+```bash
+ls ~/.local/share/claude/versions/            # what is available
+ln -sfn ~/.local/share/claude/versions/2.1.218 ~/.local/bin/claude
+readlink ~/.local/bin/claude                  # verify
+```
+
+`codemie install claude --supported` does the same thing but asks for
+confirmation on a TTY, so it cannot be scripted. Check which version CodeMie
+expects with `codemie doctor`. Rolling forward again is `claude update`.
+
+### Suppressing the onboarding wizard in a fresh profile
+
+Applied 2026-07-29 to `~/.claude-jobpilot/.claude.json`. Needed again only if the
+profile is recreated from scratch:
+
+```bash
+python3 - <<'PY'
+import json, os
+p = os.path.expanduser('~/.claude-jobpilot/.claude.json')
+d = json.load(open(p))
+d['hasCompletedOnboarding'] = True
+d['lastOnboardingVersion'] = '2.1.220'   # any recent version string works
+json.dump(d, open(p, 'w'), indent=2)
+PY
+```
+
+Both keys are read by the `claude` binary (verified against 2.1.218). The theme
+prompt is harmless and stores `"theme"` in the profile's `settings.json`.
 
 ## Model
 
