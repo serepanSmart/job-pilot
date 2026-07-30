@@ -180,11 +180,10 @@ nowhere near the 1M/month allowance.
 ## Steps 4–5 — coming in Phase 4
 
 - GitHub Actions cron (`0 */6 * * *`) with secrets `DATABASE_URL`,
-  `RESEND_API_KEY`, and **one** of `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN` (from
-  `claude setup-token` under a **personal** login) or
-  `JOBPILOT_ANTHROPIC_API_KEY`. The prefix is deliberate — the pipeline reads
-  only prefixed names, so the secret name must match. See the LLM cost section
-  below.
+  `RESEND_API_KEY`, and `JOBPILOT_CODEMIE_TOKEN`. All LLM calls go through the
+  EPAM CodeMie gateway — no personal Anthropic key is needed. The CI/CD
+  credential strategy for the CodeMie token (which has a 24h SSO lifetime) will
+  be decided in Phase 4.
 - Resend digest email, sending from `onboarding@resend.dev` to your own address
   (no domain verification needed).
 
@@ -194,44 +193,33 @@ comfortably inside the allowance.
 
 ---
 
-## LLM cost — the one line item that is not free
+## LLM cost
 
-Everything else here fits a free tier. Scoring does not, unless a personal
-Claude subscription covers it.
+All LLM calls (scoring + tailoring) go through the **EPAM CodeMie gateway**
+(`https://codemie.lab.epam.com`) — billed to EPAM, not to a personal account.
+The pipeline reads `JOBPILOT_CODEMIE_TOKEN` and the Anthropic SDK is pointed at
+the CodeMie base URL. No personal Anthropic key is needed, and the work
+Enterprise `ANTHROPIC_API_KEY` is never touched. See CLAUDE.md hard constraint #8.
 
-**The account this runs under is an open decision (Phase 3).** The dev machine's
-active Anthropic account is a work **Enterprise** org billed per token with an
-_Unlimited_ spend limit. Running the pipeline under it would put the user's CV
-and other companies' job postings on the employer's itemised bill — so the
-pipeline reads only `JOBPILOT_`-prefixed credentials and refuses to start
-without one. See CLAUDE.md hard constraint #8.
+Model reference (prices via CodeMie are EPAM-negotiated — treat these as the
+direct-API ceiling):
 
-Prices as of 2026-06-24 — re-check before committing to a budget:
+| Model                | Input /1M | Output /1M |
+| -------------------- | --------- | ---------- |
+| Haiku 4.5 (scoring)  | $1.00     | $5.00      |
+| Sonnet 4.6/5 (tailor)| $3.00     | $15.00     |
 
-| Model                | Input /1M                                    | Output /1M                  |
-| -------------------- | -------------------------------------------- | --------------------------- |
-| Haiku 4.5 (scoring)  | $1.00                                        | $5.00                       |
-| Sonnet 5 (tailoring) | $3.00 — $2.00 promotional through 2026-08-31 | $15.00 — $10.00 promotional |
+Rough volume: ~4,000 tokens per job (CV + prompt + posting), ~200 output. At 50
+new jobs/day that is ~$7–8/month at list price — covered by EPAM quota in
+practice.
 
-Rough scoring estimate: ~4,000 input tokens per job (CV + instructions + the
-posting) and ~~200 output. At 50 new jobs/day that is **~~$7–8/month**.
+Two levers if quota ever becomes a concern:
 
-Three levers, in order of effect:
+1. **Prompt caching.** The CV repeats in every request. ⚠️ Haiku 4.5's minimum
+   cacheable prefix is 4,096 tokens; `data/cv-master.md` is ~2,500. If the
+   prefix is under the minimum, caching silently does nothing — verify with
+   `cache_creation_input_tokens` before relying on it.
+2. **Halve the cron to every 12 hours.** Job boards move slowly; 12-hour polling
+   catches nearly as much as 6-hour.
 
-1. **Batch API — 50% off.** Async, usually inside an hour, which a 6-hour cron
-   tolerates. Halves the bill to ~$4/month. **Only available on the API-key
-   path** — there is no batch endpoint through `claude -p`.
-2. **Prompt caching.** The CV repeats in every request; cache reads cost ~0.1× of
-   input. ⚠️ **Haiku 4.5's minimum cacheable prefix is 4,096 tokens** and
-   `data/cv-master.md` is roughly 2,500. If the full prefix lands under the
-   minimum, caching silently does nothing — no error, just
-   `cache_creation_input_tokens: 0`. Measure with `count_tokens` before relying
-   on it.
-3. **Halve the cron to every 12 hours.** Job boards do not move fast enough for
-   6-hour polling to find much that 12-hour polling misses.
-
-Tailoring is negligible: ~$0.04 per application, so under $1/month.
-
-Target infra cost is therefore **$0 for hosting, database, and CI**, plus
-single-digit dollars for scoring — unless a personal Claude subscription is used,
-which makes it $0 but consumes personal usage limits instead.
+Target infra cost: **$0** for hosting, database, CI, and LLM (CodeMie quota).
