@@ -27,9 +27,8 @@ function isPipelineStatus(value: string): value is JobStatus {
 }
 
 function DraggableCard({ job }: { readonly job: Job }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
+  const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({ id: job.id });
-
   return (
     <Card
       variant="outlined"
@@ -39,17 +38,15 @@ function DraggableCard({ job }: { readonly job: Job }) {
       sx={{
         cursor: 'grab',
         opacity: isDragging ? 0.4 : 1,
+        touchAction: 'none',
         transform: transform
           ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
           : undefined,
-        touchAction: 'none',
       }}
     >
       <CardContent sx={{ p: 1.75, '&:last-child': { pb: 1.75 } }}>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <ScoreRing score={job.score} size={36} />
-          {/* minWidth: 0 lets this shrink below its content width, which is
-              what allows the text inside to ellipsise at all. */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <TruncatedText
               text={job.company}
@@ -67,22 +64,21 @@ function DraggableCard({ job }: { readonly job: Job }) {
     </Card>
   );
 }
+DraggableCard.displayName = 'DraggableCard';
 
 function Column({
-  status,
   jobs,
+  status,
 }: {
-  readonly status: JobStatus;
   readonly jobs: Job[];
+  readonly status: JobStatus;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+  const { isOver, setNodeRef } = useDroppable({ id: status });
 
   return (
     <Box
       ref={setNodeRef}
       sx={{
-        // Share the container width evenly; stop shrinking at 200px and let
-        // the row scroll instead, so cards never get unreadable.
         flex: '1 1 0',
         minWidth: 200,
         display: 'flex',
@@ -110,18 +106,15 @@ function Column({
     </Box>
   );
 }
+Column.displayName = 'Column';
 
 interface Move {
-  readonly job: Job;
   readonly from: JobStatus;
+  readonly job: Job;
   readonly to: JobStatus;
 }
 
 export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
-  /**
-   * Server list is the source of truth; useOptimistic shows the drop instantly
-   * and rebases when revalidation lands. No effect mirrors props into state.
-   */
   const [jobs, applyOptimistic] = useOptimistic(
     initialJobs,
     (current: Job[], move: { readonly id: string; readonly to: JobStatus }) =>
@@ -135,12 +128,16 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
 
   function onDragEnd(event: DragEndEvent) {
     const target = event.over?.id;
-    if (typeof target !== 'string' || !isPipelineStatus(target)) return;
+    if (typeof target !== 'string' || !isPipelineStatus(target)) {
+      return;
+    }
 
     const job = jobs.find((item) => item.id === event.active.id);
-    if (!job || job.status === target) return;
+    if (!job || job.status === target) {
+      return;
+    }
 
-    setMoved({ job, from: job.status, to: target });
+    setMoved({ from: job.status, job, to: target });
 
     startTransition(async () => {
       applyOptimistic({ id: job.id, to: target });
@@ -149,8 +146,10 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
   }
 
   function undo() {
-    if (!moved) return;
-    const { job, from } = moved;
+    if (!moved) {
+      return;
+    }
+    const { from, job } = moved;
     setMoved(null);
 
     startTransition(async () => {
@@ -166,8 +165,8 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
           {PIPELINE_STATUSES.map((status) => (
             <Column
               key={status}
-              status={status}
               jobs={jobs.filter((job) => job.status === status)}
+              status={status}
             />
           ))}
         </Box>
@@ -182,7 +181,7 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         message={
           moved
-            ? `${moved.job.company} → ${JOB_STATUS_LABELS[moved.to]}`
+            ? `${moved.job.company} -> ${JOB_STATUS_LABELS[moved.to]}`
             : undefined
         }
         action={
@@ -194,3 +193,4 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
     </>
   );
 }
+Kanban.displayName = 'Kanban';

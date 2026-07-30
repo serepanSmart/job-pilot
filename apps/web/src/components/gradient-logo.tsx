@@ -2,10 +2,6 @@ import Typography from '@mui/material/Typography';
 import type { TypographyProps } from '@mui/material/Typography';
 import { tokens } from '@/theme/tokens';
 
-/**
- * The wordmark. One of only three places the accent gradient is allowed
- * (logo, score ring, contained buttons).
- */
 export function GradientLogo({ variant = 'h6', ...props }: TypographyProps) {
   return (
     <Typography
@@ -25,3 +21,4 @@ export function GradientLogo({ variant = 'h6', ...props }: TypographyProps) {
     </Typography>
   );
 }
+GradientLogo.displayName = 'GradientLogo';

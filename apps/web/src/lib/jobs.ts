@@ -8,7 +8,6 @@ import {
 } from '@jobpilot/db';
 import { desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
-/** Inbox: untriaged jobs, best score first. */
 export async function getInboxJobs(): Promise<Job[]> {
   return getDb()
     .select()
@@ -26,7 +25,6 @@ export async function getJob(id: string): Promise<Job | undefined> {
   return rows[0];
 }
 
-/** Everything shown on the kanban, i.e. excluding rejected/archived. */
 export async function getPipelineJobs(): Promise<Job[]> {
   return getDb()
     .select()
@@ -38,15 +36,14 @@ export async function getPipelineJobs(): Promise<Job[]> {
 export type StatusCounts = Record<JobStatus, number>;
 
 export interface WeeklyApplications {
-  /** ISO date of the Monday starting that week. */
-  readonly weekStart: string;
   readonly count: number;
+  readonly weekStart: string;
 }
 
 export interface Stats {
   readonly counts: StatusCounts;
+  readonly funnel: readonly { count: number; stage: JobStatus }[];
   readonly total: number;
-  readonly funnel: readonly { stage: JobStatus; count: number }[];
   readonly weekly: readonly WeeklyApplications[];
 }
 
@@ -54,7 +51,6 @@ function mondayOf(date: Date): string {
   const copy = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
-  // getUTCDay(): 0 = Sunday, so shift Sunday back a full week.
   const offset = (copy.getUTCDay() + 6) % 7;
   copy.setUTCDate(copy.getUTCDate() - offset);
   return copy.toISOString().slice(0, 10);
@@ -65,7 +61,7 @@ export async function getStats(): Promise<Stats> {
 
   const [statusRows, appliedRows] = await Promise.all([
     db
-      .select({ status: jobs.status, count: sql<number>`count(*)::int` })
+      .select({ count: sql<number>`count(*)::int`, status: jobs.status })
       .from(jobs)
       .groupBy(jobs.status),
     db
@@ -96,8 +92,6 @@ export async function getStats(): Promise<Stats> {
     total += row.count;
   }
 
-  // The funnel is cumulative: everyone who interviewed also applied, so each
-  // stage counts every job that reached it *or beyond*.
   const stageOrder: readonly JobStatus[] = [
     'applied',
     'screening',
@@ -109,19 +103,21 @@ export async function getStats(): Promise<Stats> {
     const count = stageOrder
       .slice(fromIndex)
       .reduce((sum, later) => sum + counts[later], 0);
-    return { stage, count };
+    return { count, stage };
   });
 
   const buckets = new Map<string, number>();
   for (const row of appliedRows) {
-    if (!row.dateApplied) continue;
+    if (row.dateApplied === null) {
+      continue;
+    }
     const week = mondayOf(row.dateApplied);
     buckets.set(week, (buckets.get(week) ?? 0) + 1);
   }
 
   const weekly = [...buckets.entries()]
-    .map(([weekStart, count]) => ({ weekStart, count }))
+    .map(([weekStart, count]) => ({ count, weekStart }))
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 
-  return { counts, total, funnel, weekly };
+  return { counts, funnel, total, weekly };
 }

@@ -48,15 +48,20 @@ export default tseslint.config(
       globals: { ...globals.node },
     },
     rules: {
-      // "no default exports except Next.js route files"
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'all'],
+      'no-nested-ternary': 'error',
+
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', disallowTypeAnnotations: false },
+      ],
+
       'no-restricted-exports': [
         'error',
         { restrictDefaultExports: { direct: true, named: true } },
       ],
 
-      // No TypeScript enums — use an `as const` array + union type + Record.
-      // Enums emit extra runtime JS, have a typesafety backdoor in their
-      // declaration, and do not exist in plain JavaScript.
       'no-restricted-syntax': [
         'error',
         {

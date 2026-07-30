@@ -27,7 +27,9 @@ export default async function JobPage({
   const { id } = await params;
   const job = await getJob(id);
 
-  if (!job) notFound();
+  if (!job) {
+    notFound();
+  }
 
   return (
     <PageContainer>
@@ -83,7 +85,7 @@ export default async function JobPage({
                 <Typography variant="subtitle2" gutterBottom>
                   Matched ({job.matchedKeywords.length})
                 </Typography>
-                {job.matchedKeywords.length > 0 ? (
+                {job.matchedKeywords.length ? (
                   <Stack
                     direction="row"
                     spacing={1}
@@ -107,7 +109,7 @@ export default async function JobPage({
                 <Typography variant="subtitle2" gutterBottom>
                   Missing ({job.missingKeywords.length})
                 </Typography>
-                {job.missingKeywords.length > 0 ? (
+                {job.missingKeywords.length ? (
                   <Stack
                     direction="row"
                     spacing={1}

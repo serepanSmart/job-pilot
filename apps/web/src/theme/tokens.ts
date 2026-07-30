@@ -1,13 +1,5 @@
-/**
- * "Obsidian Violet" raw tokens.
- *
- * Values are fixed by CLAUDE.md "Design system" — do not improvise new ones.
- * Everything here is consumed by theme.ts styleOverrides; components should
- * never import these directly, so that all styling stays in the theme.
- */
 export const tokens = {
   surface: {
-    /** Near-black, purple-tinted. Never pure #000. */
     base: '#0B0910',
     paper: '#141020',
     elevated: '#1C1729',
@@ -29,13 +21,11 @@ export const tokens = {
     error: '#FB7185',
     info: '#60A5FA',
   },
-  /** Logo, score ring, and contained buttons ONLY. */
   gradient: 'linear-gradient(135deg, #7C3AED 0%, #C084FC 100%)',
   border: {
     subtle: 'rgba(139, 92, 246, 0.12)',
     hover: 'rgba(139, 92, 246, 0.35)',
   },
-  /** Interactive card hover glow. */
   glow: '0 0 24px rgba(124, 58, 237, 0.15)',
   chipFill: 'rgba(139, 92, 246, 0.08)',
   scrollThumb: 'rgba(139, 92, 246, 0.25)',
@@ -44,7 +34,6 @@ export const tokens = {
   radius: 12,
 } as const;
 
-/** Translucent alert backgrounds — never solid fills. */
 export const alertFill = {
   success: 'rgba(52, 211, 153, 0.08)',
   warning: 'rgba(251, 191, 36, 0.08)',

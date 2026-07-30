@@ -2,10 +2,6 @@ import { createTheme } from '@mui/material/styles';
 import NextLink from 'next/link';
 import { alertFill, tokens } from './tokens';
 
-/**
- * All "Obsidian Violet" styling lives here in styleOverrides. Pages must not
- * re-implement these rules with sx props — see CLAUDE.md "Design system".
- */
 export const theme = createTheme({
   cssVariables: { colorSchemeSelector: 'class' },
   defaultColorScheme: 'dark',
@@ -66,11 +62,6 @@ export const theme = createTheme({
   },
 
   components: {
-    /**
-     * Wire next/link in once, here. Server components cannot pass a component
-     * function as a prop to a client component (`component={Link}` throws), so
-     * anything clickable just sets `href` and MUI routes it through next/link.
-     */
     MuiButtonBase: {
       defaultProps: { LinkComponent: NextLink },
     },
@@ -80,11 +71,9 @@ export const theme = createTheme({
         '*, *::before, *::after': { boxSizing: 'border-box' },
         body: {
           backgroundColor: tokens.surface.base,
-          // Thin scrollbars — Firefox.
           scrollbarWidth: 'thin',
           scrollbarColor: `${tokens.scrollThumb} transparent`,
         },
-        // Thin scrollbars — WebKit.
         '*::-webkit-scrollbar': { width: 8, height: 8 },
         '*::-webkit-scrollbar-track': { background: 'transparent' },
         '*::-webkit-scrollbar-thumb': {
@@ -94,7 +83,6 @@ export const theme = createTheme({
         '*::-webkit-scrollbar-thumb:hover': {
           background: tokens.border.hover,
         },
-        // Keyboard triage must always be visibly focused.
         ':focus-visible': {
           outline: `2px solid ${tokens.primary.light}`,
           outlineOffset: 2,
@@ -103,7 +91,6 @@ export const theme = createTheme({
     },
 
     MuiPaper: {
-      // Kill MUI's default elevation shadows entirely.
       defaultProps: { elevation: 0 },
       styleOverrides: {
         root: {
@@ -128,7 +115,6 @@ export const theme = createTheme({
       },
       variants: [
         {
-          // Cards that respond to hover/keyboard selection.
           props: { variant: 'outlined' },
           style: {
             '&:hover, &[data-selected="true"]': {
@@ -178,7 +164,6 @@ export const theme = createTheme({
       },
       variants: [
         {
-          // Matched keywords.
           props: { color: 'success' },
           style: {
             borderColor: tokens.status.success,
@@ -187,7 +172,6 @@ export const theme = createTheme({
           },
         },
         {
-          // Red flags / warnings.
           props: { color: 'warning' },
           style: {
             borderColor: tokens.status.warning,
@@ -196,7 +180,6 @@ export const theme = createTheme({
           },
         },
         {
-          // Missing keywords — deliberately muted, not alarming.
           props: { color: 'default' },
           style: {
             borderColor: tokens.border.subtle,
@@ -219,14 +202,10 @@ export const theme = createTheme({
           },
         },
       },
-      // v9 dropped the compound `containedPrimary` class, so the gradient goes
-      // through the variants API instead.
       variants: [
         {
           props: { variant: 'contained', color: 'primary' },
           style: {
-            // The gradient is reserved for contained buttons, the logo, and
-            // the score ring.
             backgroundImage: tokens.gradient,
             color: tokens.primary.contrastText,
             '&:hover': {
@@ -243,8 +222,6 @@ export const theme = createTheme({
       styleOverrides: {
         root: { borderRadius: tokens.radius, backgroundImage: 'none' },
       },
-      // Translucent fill + matching 1px border, never a solid fill. v9 dropped
-      // the compound `outlinedSuccess` classes, so this goes through variants.
       variants: [
         {
           props: { severity: 'success' },

@@ -3,13 +3,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { tokens } from '@/theme/tokens';
 
-/**
- * Circular score badge. Gradient ring by default; turns success-green at 80+.
- * One of only three sanctioned gradient uses.
- *
- * Geometry lives here rather than in the theme because ScoreRing is not a MUI
- * component — but every colour still comes from the design tokens.
- */
 export function ScoreRing({
   score,
   size = 48,
@@ -55,9 +48,10 @@ export function ScoreRing({
             color: strong ? tokens.status.success : tokens.text.primary,
           }}
         >
-          {score ?? '—'}
+          {score ?? '-'}
         </Typography>
       </Box>
     </Box>
   );
 }
+ScoreRing.displayName = 'ScoreRing';

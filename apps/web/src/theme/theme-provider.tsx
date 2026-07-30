@@ -17,3 +17,4 @@ export function AppThemeProvider({
     </ThemeProvider>
   );
 }
+AppThemeProvider.displayName = 'AppThemeProvider';

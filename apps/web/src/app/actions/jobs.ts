@@ -18,9 +18,11 @@ const notesInput = z.object({
 export async function setJobStatus(
   id: string,
   status: string
-): Promise<{ readonly ok: boolean; readonly error?: string }> {
+): Promise<{ readonly error?: string; readonly ok: boolean }> {
   const parsed = statusInput.safeParse({ id, status });
-  if (!parsed.success) return { ok: false, error: 'Invalid status update.' };
+  if (!parsed.success) {
+    return { error: 'Invalid status update.', ok: false };
+  }
 
   const now = new Date();
   const patch: Record<string, unknown> = {
@@ -28,7 +30,6 @@ export async function setJobStatus(
     updatedAt: now,
   };
 
-  // Applying starts the follow-up clock; un-applying clears it.
   if (parsed.data.status === 'applied') {
     patch.dateApplied = now;
     const due = new Date(now);
@@ -49,9 +50,11 @@ export async function setJobStatus(
 export async function setJobNotes(
   id: string,
   notes: string
-): Promise<{ readonly ok: boolean; readonly error?: string }> {
+): Promise<{ readonly error?: string; readonly ok: boolean }> {
   const parsed = notesInput.safeParse({ id, notes });
-  if (!parsed.success) return { ok: false, error: 'Notes are too long.' };
+  if (!parsed.success) {
+    return { error: 'Notes are too long.', ok: false };
+  }
 
   await getDb()
     .update(jobs)

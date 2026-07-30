@@ -1,0 +1,51 @@
+import type { PipelineJob } from './types';
+
+const TITLE_RE =
+  /frontend|front-end|front end|react|ui engineer|web engineer|fullstack|full-stack|full stack/i;
+
+const REACT_DESC_RE = /\breact\b/i;
+
+const REJECT_LOCATION_RE =
+  /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required/i;
+
+const REJECT_DOU_RE = /офіс|офісна|в офіс/i;
+
+const JUNIOR_RE =
+  /\bjunior\b|\bjr\.\s|\bintern(ship)?\b|entry[\s-]level|graduate program/i;
+
+const MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
+
+export function passesTitleFilter(job: PipelineJob): boolean {
+  return TITLE_RE.test(job.role) || REACT_DESC_RE.test(job.description);
+}
+
+export function passesLocationFilter(job: PipelineJob): boolean {
+  const text = `${job.description} ${job.locationPolicy ?? ''}`;
+  if (REJECT_LOCATION_RE.test(text)) {
+    return false;
+  }
+  if (REJECT_DOU_RE.test(text)) {
+    return false;
+  }
+  return true;
+}
+
+export function passesAgeFilter(job: PipelineJob): boolean {
+  if (job.postedAt === null) {
+    return true;
+  }
+  return Date.now() - job.postedAt.getTime() <= MAX_AGE_MS;
+}
+
+export function passesLevelFilter(job: PipelineJob): boolean {
+  return !JUNIOR_RE.test(job.role);
+}
+
+export function hardFilter(job: PipelineJob): boolean {
+  return (
+    passesTitleFilter(job) &&
+    passesLocationFilter(job) &&
+    passesAgeFilter(job) &&
+    passesLevelFilter(job)
+  );
+}

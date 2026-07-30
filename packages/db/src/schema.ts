@@ -15,10 +15,6 @@ export const jobStatusEnum = pgEnum('job_status', JOB_STATUSES);
 export const atsProviderEnum = pgEnum('ats_provider', ATS_PROVIDERS);
 export const timezoneFitEnum = pgEnum('timezone_fit', TIMEZONE_FITS);
 
-/**
- * Every discovered job that scored at or above the threshold. Anything below it
- * never lands here — only its hash goes to `seenHashes`.
- */
 export const jobs = pgTable(
   'jobs',
   {
@@ -30,8 +26,6 @@ export const jobs = pgTable(
     source: text('source').notNull(),
     description: text('description').notNull().default(''),
 
-    // Scoring output. Nullable because a manually added job may not be scored
-    // yet; the pipeline always fills these.
     score: integer('score'),
     verdict: text('verdict'),
     matchedKeywords: jsonb('matched_keywords')
@@ -71,15 +65,10 @@ export const jobs = pgTable(
   (table) => [
     uniqueIndex('jobs_url_unique').on(table.url),
     uniqueIndex('jobs_content_hash_unique').on(table.contentHash),
-    // Inbox query: status = 'new' ordered by score desc.
     index('jobs_status_score_idx').on(table.status, table.score),
   ]
 );
 
-/**
- * Every hash the pipeline has ever seen, including rejected and archived jobs.
- * This is what guarantees an archived job never resurfaces.
- */
 export const seenHashes = pgTable('seen_hashes', {
   hash: text('hash').primaryKey(),
   firstSeen: timestamp('first_seen', { withTimezone: true })
@@ -87,11 +76,9 @@ export const seenHashes = pgTable('seen_hashes', {
     .defaultNow(),
 });
 
-/** ATS boards to poll. Grows automatically from aggregator job links. */
 export const companies = pgTable('companies', {
   slug: text('slug').primaryKey(),
   ats: atsProviderEnum('ats').notNull(),
-  /** Where this slug came from: 'seed' or the aggregator that revealed it. */
   addedFrom: text('added_from').notNull().default('seed'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

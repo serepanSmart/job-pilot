@@ -36,7 +36,7 @@ automatically.
 | plain `claude` ❌ | Unity OAuth seat (`serhii.vovna@unity3d.com`) | **Unity — forbidden here** | OTEL → Unity collector |
 | Claude Code VS Code panel ❌ | same Unity OAuth seat | **Unity — forbidden here** | OTEL → Unity collector |
 | bare `codemie-claude` ⚠️ | CodeMie token (billing fine) | EPAM | **OTEL still → Unity** (shares `~/.claude`) |
-| pipeline (Phase 3+) | `JOBPILOT_ANTHROPIC_API_KEY` / `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN` | personal | none |
+| pipeline (Phase 3+) | `JOBPILOT_CODEMIE_TOKEN` → CodeMie gateway | EPAM | none |
 
 The rule this encodes: **Unity must neither see nor pay for this project.**
 Hard constraint #8 in `CLAUDE.md` is the same rule for pipeline code.

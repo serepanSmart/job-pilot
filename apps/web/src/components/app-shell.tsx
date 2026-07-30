@@ -15,22 +15,12 @@ const NAV = [
   { href: '/stats', label: 'Stats' },
 ] as const;
 
-/**
- * Chrome only. Page width is each page's own decision via PageContainer —
- * the kanban needs the full viewport, reading views do not.
- */
 export function AppShell({ children }: { readonly children: ReactNode }) {
   return (
     <>
-      {/* The bar itself spans the viewport (the glassmorphism edge and bottom
-          divider should not stop mid-screen); only its contents are contained.
-          Width is xl — the widest page — so the logo and nav never shift
-          position when moving between pages of different widths. */}
       <AppBar position="sticky">
         <Container maxWidth="xl">
           <Toolbar disableGutters sx={{ gap: 2 }}>
-            {/* next/link rendered directly is fine; only *passing* it as a prop
-                into a client component is not. */}
             <Link href="/" style={{ textDecoration: 'none' }}>
               <GradientLogo />
             </Link>
@@ -62,3 +52,4 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
     </>
   );
 }
+AppShell.displayName = 'AppShell';

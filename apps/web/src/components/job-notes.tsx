@@ -48,7 +48,7 @@ export function JobNotes({
           onClick={save}
           disabled={pending || !dirty}
         >
-          {pending ? 'Saving…' : 'Save notes'}
+          {pending ? 'Saving...' : 'Save notes'}
         </Button>
         {saved && !dirty ? (
           <Typography variant="caption" color="success.main">
@@ -59,3 +59,4 @@ export function JobNotes({
     </Stack>
   );
 }
+JobNotes.displayName = 'JobNotes';

@@ -20,7 +20,7 @@ export async function login(
   const password = formData.get('password');
   const next = formData.get('next');
 
-  if (typeof password !== 'string' || password.length === 0) {
+  if (typeof password !== 'string' || !password.length) {
     return { error: 'Enter your password.' };
   }
 
@@ -31,13 +31,12 @@ export async function login(
   const store = await cookies();
   store.set(SESSION_COOKIE, await createSessionToken(), {
     httpOnly: true,
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    path: '/',
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: SESSION_MAX_AGE_SECONDS,
   });
 
-  // Only allow same-site relative paths — never an absolute URL from input.
   const target =
     typeof next === 'string' && next.startsWith('/') && !next.startsWith('//')
       ? next

@@ -231,15 +231,15 @@ Not yet set up — add in the phase that first needs them:
 
 Mirror `github.com/serepanSmart/portfolio-sw`.
 
-- **TS strict everywhere:** `strict`, `noUnusedLocals`, `noUnusedParameters`,
-  `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`,
-  `noUncheckedSideEffectImports`; `target` ES2022; `moduleResolution` bundler.
-- **No `any`.** Use `unknown` + **zod parsing at every IO boundary**: job board
-  responses, LLM output, route handler bodies, env vars.
-- **No TypeScript `enum` or `const enum`.** Enums emit extra runtime JavaScript,
-  have a typesafety backdoor in their declaration, and don't exist in plain JS —
-  which makes JS→TS refactoring harder. Use an `as const` array, a union type
-  derived from it, and a `Record` for display labels:
+### Types & exports
+
+- No `any` / `as any`, no non-null `!`, no `as unknown as X`. Use type guards
+  or explicit checks; plain `as SomeType` only when the target type is provably
+  correct and narrowing is not practical.
+- `interface` for object shapes; `type` only for unions, intersections, and
+  inferred aliases (`type Foo = z.infer<typeof FooSchema>`).
+- No TypeScript `enum` or `const enum`. Use an `as const` array + union type +
+  `Record` for display labels:
 
   ```ts
   export const JOB_STATUSES = ['new', 'shortlisted' /* … */] as const;
@@ -250,20 +250,60 @@ Mirror `github.com/serepanSmart/portfolio-sw`.
   };
   ```
 
-  The canonical example is `packages/db/src/constants.ts`. Enforced by
-  `no-restricted-syntax` on `TSEnumDeclaration`, so a violation fails `lint`.
+  Canonical example: `packages/db/src/constants.ts`. Enforced by
+  `no-restricted-syntax` on `TSEnumDeclaration`.
 
-  **`pgEnum` and `z.enum` are not TypeScript enums** and must not be "fixed".
-  `pgEnum('job_status', JOB_STATUSES)` declares a Postgres column type and
-  `z.enum(JOB_STATUSES)` builds a validator — both are *derived from* the
-  `as const` arrays, which is exactly the intended pattern.
+  **`pgEnum` and `z.enum` are not TypeScript enums** — never "fix" them. They
+  are derived from the `as const` arrays, which is the intended pattern.
+
+- `import type { … }` for type-only imports. (Enforced by
+  `@typescript-eslint/consistent-type-imports`; `verbatimModuleSyntax` catches
+  the remainder at the compiler level.)
+- Named exports only; **no default exports except Next.js route files**.
+- Interface and param-object fields **alphabetical**; optional fields last, also
+  alphabetical: `{ aField: string; bField: string; aOpt?: number }`.
+
+### Style
+
+- `===` / `!==` only. Null+undefined: `value === null || value === undefined`,
+  **never** `value == null`.
+- **Braces around every `if`/`else`/`for`/`while` body.** (Enforced by `curly`.)
+- No nested ternaries. (Enforced by `no-nested-ternary`.)
+- Array emptiness: `!!array.length` / `!array.length` — never `.length > 0` /
+  `.length === 0`.
+- Destructure at the call site.
+- **No comments by default, not even short "why" ones.** Only when genuinely
+  unreadable without it: inline, one line max. Never block or JSDoc comments in
+  application code.
+- Hyphen `-`, never em dash, in source strings and prose.
+
+### React
+
+- `ComponentName.displayName = 'ComponentName';` on the line after every
+  component definition, including after `memo(…)` / `forwardRef(…)`.
+
+### Tooling
+
+- **TS strict:** `strict`, `noUnusedLocals`, `noUnusedParameters`,
+  `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`,
+  `noUncheckedSideEffectImports`; `target` ES2022; `moduleResolution` bundler.
+- **No `any`.** Use `unknown` + **zod parsing at every IO boundary**: job board
+  responses, LLM output, route handler bodies, env vars.
 - **ESLint** flat config: typescript-eslint (strict + stylistic), react-hooks,
-  `eslint-config-prettier` last.
+  `eslint-config-prettier` last. Extra rules: `eqeqeq`, `curly`, `no-nested-ternary`,
+  `@typescript-eslint/consistent-type-imports`.
 - **Prettier:** `semi: true`, `trailingComma: "es5"`, `singleQuote: true`,
   `printWidth: 80`, `tabWidth: 2`, `arrowParens: "always"`, `endOfLine: "lf"`.
 - **Husky pre-commit + lint-staged:** `eslint --fix`, `prettier`, `tsc --noEmit`.
-- Path alias `@/`; **kebab-case file names**; functional components with typed
-  props; **no default exports except Next.js route files**.
+- Path alias `@/`; kebab-case file names; functional components with typed props.
+- Verification gate for every phase: `lint` + `typecheck` + `build` must pass.
+
+### Git & PRs
+
+- PRs always `gh pr create --draft` unless told otherwise.
+- Integrate `master` with `git merge`, never `git rebase`.
+- Never commit or push unprompted. When asked to commit - just do it. When not
+  asked - show the planned message + files to stage and wait for a go-ahead.
 
 ## Design system — "Obsidian Violet"
 

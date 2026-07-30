@@ -29,8 +29,8 @@ interface Triage {
 }
 
 type OptimisticAction =
-  | { readonly type: 'remove'; readonly id: string }
-  | { readonly type: 'restore'; readonly job: Job };
+  | { readonly id: string; readonly type: 'remove' }
+  | { readonly job: Job; readonly type: 'restore' };
 
 function byScoreThenRecency(a: Job, b: Job): number {
   return (
@@ -40,16 +40,13 @@ function byScoreThenRecency(a: Job, b: Job): number {
 }
 
 function clamp(length: number, index: number): number {
-  if (length <= 0) return 0;
+  if (length <= 0) {
+    return 0;
+  }
   return Math.min(Math.max(index, 0), length - 1);
 }
 
 export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
-  /**
-   * The server list is the source of truth. useOptimistic layers pending
-   * triage on top and rebases automatically once revalidation lands, which is
-   * why there is no effect syncing props into state.
-   */
   const [jobs, applyOptimistic] = useOptimistic(
     initialJobs,
     (current: Job[], action: OptimisticAction) =>
@@ -66,13 +63,15 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
   const triage = useCallback(
     (index: number, to: TriageTarget) => {
       const job = jobs[index];
-      if (!job) return;
+      if (!job) {
+        return;
+      }
 
       setLastTriage({ job, to });
       setSelected((previous) => clamp(jobs.length - 1, previous));
 
       startTransition(async () => {
-        applyOptimistic({ type: 'remove', id: job.id });
+        applyOptimistic({ id: job.id, type: 'remove' });
         await setJobStatus(job.id, to);
       });
     },
@@ -80,19 +79,20 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
   );
 
   const undo = useCallback(() => {
-    if (!lastTriage) return;
+    if (!lastTriage) {
+      return;
+    }
     const { job } = lastTriage;
     setLastTriage(null);
 
     startTransition(async () => {
-      applyOptimistic({ type: 'restore', job });
+      applyOptimistic({ job, type: 'restore' });
       await setJobStatus(job.id, 'new');
     });
   }, [lastTriage, applyOptimistic, startTransition]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      // Never hijack keys while the user is typing.
       const target = event.target as HTMLElement | null;
       if (
         target &&
@@ -101,7 +101,9 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
       ) {
         return;
       }
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
 
       switch (event.key) {
         case 'j':
@@ -135,15 +137,14 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
     };
   }, [jobs.length, selected, triage, undo]);
 
-  // Keep the selected card in view during keyboard navigation.
   useEffect(() => {
     cardRefs.current[selected]?.scrollIntoView({
-      block: 'nearest',
       behavior: 'smooth',
+      block: 'nearest',
     });
   }, [selected]);
 
-  if (jobs.length === 0) {
+  if (!jobs.length) {
     return (
       <Card variant="outlined">
         <CardContent>
@@ -209,7 +210,7 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
                     ) : null}
                     <Chip label={formatAge(job.dateFound)} />
                     {job.salaryInfo ? <Chip label={job.salaryInfo} /> : null}
-                    {job.redFlags.length > 0 ? (
+                    {job.redFlags.length ? (
                       <Chip
                         color="warning"
                         label={`${job.redFlags.length} red flag${
@@ -269,7 +270,7 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         message={
           lastTriage
-            ? `${lastTriage.job.company} → ${lastTriage.to}`
+            ? `${lastTriage.job.company} -> ${lastTriage.to}`
             : undefined
         }
         action={
@@ -281,3 +282,4 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
     </>
   );
 }
+Inbox.displayName = 'Inbox';

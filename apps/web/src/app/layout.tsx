@@ -26,7 +26,6 @@ export default function RootLayout({
       className={`${sora.variable} ${inter.variable}`}
     >
       <body>
-        {/* Applies the stored colour scheme before paint, so dark never flashes. */}
         <InitColorSchemeScript attribute="class" defaultMode="dark" />
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <AppThemeProvider>{children}</AppThemeProvider>

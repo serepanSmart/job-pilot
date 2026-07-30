@@ -39,3 +39,4 @@ export function JobStatusSelect({
     </TextField>
   );
 }
+JobStatusSelect.displayName = 'JobStatusSelect';

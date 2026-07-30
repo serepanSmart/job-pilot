@@ -1,13 +1,5 @@
 import { z } from 'zod';
 
-/**
- * Single-user session: an HMAC-SHA256 token keyed on DASHBOARD_PASSWORD.
- *
- * Web Crypto (not node:crypto) because middleware runs on the Edge runtime.
- * No separate cookie secret exists by design — the signing key *is* the
- * password, so changing the password invalidates every existing session.
- */
-
 export const SESSION_COOKIE = 'jobpilot_session';
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
@@ -52,9 +44,10 @@ async function sign(payload: string, key: string): Promise<string> {
     .join('');
 }
 
-/** Constant-time comparison — avoids leaking the signature via timing. */
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
+  if (a.length !== b.length) {
+    return false;
+  }
 
   let diff = 0;
   for (let i = 0; i < a.length; i += 1) {
@@ -76,25 +69,32 @@ export async function createSessionToken(): Promise<string> {
 export async function isSessionTokenValid(
   token: string | undefined
 ): Promise<boolean> {
-  if (!token) return false;
+  if (!token) {
+    return false;
+  }
 
   const separator = token.lastIndexOf('.');
-  if (separator <= 0) return false;
+  if (separator <= 0) {
+    return false;
+  }
 
   const issuedAt = token.slice(0, separator);
   const signature = token.slice(separator + 1);
 
   const issuedAtMs = Number(issuedAt);
-  if (!Number.isFinite(issuedAtMs)) return false;
+  if (!Number.isFinite(issuedAtMs)) {
+    return false;
+  }
 
   const ageSeconds = (Date.now() - issuedAtMs) / 1000;
-  if (ageSeconds < 0 || ageSeconds > SESSION_MAX_AGE_SECONDS) return false;
+  if (ageSeconds < 0 || ageSeconds > SESSION_MAX_AGE_SECONDS) {
+    return false;
+  }
 
   let expected: string;
   try {
     expected = await sign(issuedAt, readPassword());
   } catch {
-    // Password not configured — fail closed rather than granting access.
     return false;
   }
 

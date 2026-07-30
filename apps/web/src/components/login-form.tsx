@@ -52,9 +52,10 @@ export function LoginForm({ next }: { readonly next: string }) {
           disabled={pending}
           fullWidth
         >
-          {pending ? 'Signing in…' : 'Sign in'}
+          {pending ? 'Signing in...' : 'Sign in'}
         </Button>
       </Stack>
     </Box>
   );
 }
+LoginForm.displayName = 'LoginForm';

@@ -62,6 +62,7 @@ export function FunnelChart({
     </Box>
   );
 }
+FunnelChart.displayName = 'FunnelChart';
 
 export function WeeklyApplicationsChart({
   data,
@@ -69,7 +70,6 @@ export function WeeklyApplicationsChart({
   readonly data: readonly { weekStart: string; count: number }[];
 }) {
   const rows = data.map((item) => ({
-    // "2026-07-20" → "20 Jul"
     name: new Date(item.weekStart).toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -108,3 +108,4 @@ export function WeeklyApplicationsChart({
     </Box>
   );
 }
+WeeklyApplicationsChart.displayName = 'WeeklyApplicationsChart';

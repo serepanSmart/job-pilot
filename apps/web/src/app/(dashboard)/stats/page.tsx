@@ -72,7 +72,7 @@ export default async function StatsPage() {
             <Typography variant="subtitle2" gutterBottom>
               Applications per week
             </Typography>
-            {stats.weekly.length > 0 ? (
+            {stats.weekly.length ? (
               <WeeklyApplicationsChart data={stats.weekly} />
             ) : (
               <Typography variant="body2" color="text.secondary">

@@ -6,8 +6,6 @@ import { PageContainer } from '@/components/page-container';
 import { getInboxJobs } from '@/lib/jobs';
 
 export const metadata: Metadata = { title: 'Inbox · JobPilot' };
-
-// Triage state changes constantly; never serve a cached Inbox.
 export const dynamic = 'force-dynamic';
 
 export default async function InboxPage() {
