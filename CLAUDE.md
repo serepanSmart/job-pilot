@@ -63,13 +63,13 @@ triage the Inbox.**
      from the local ones.
    - Never echo a secret into chat either. If a real credential does reach the
      transcript, say so plainly and rotate it.
-8. **Never bill this project to the user's employer.** The dev machine has a
-   work **Enterprise** Anthropic account active — `ANTHROPIC_API_KEY` is
-   exported in the shell, spend is per-token, and the spend limit is
-   *Unlimited*, so nothing would stop a runaway pipeline. Enterprise usage is
-   itemised per account in the org console, and this project sends the user's CV
-   and other companies' job postings. Therefore the pipeline **must never read
-   an ambient credential** — see [LLM access](#llm-access--read-before-touching-scoring-or-tailoring).
+8. **All LLM calls go through the EPAM CodeMie gateway — never a direct
+   Anthropic credential.** The dev machine has a work **Enterprise**
+   `ANTHROPIC_API_KEY` exported in the shell; a zero-arg Anthropic SDK client
+   or any ambient-key read would bill Unity silently. The pipeline and skills
+   must use only `JOBPILOT_CODEMIE_TOKEN` with the CodeMie base URL. No
+   `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or `CLAUDE_CODE_OAUTH_TOKEN`
+   — see [LLM access](#llm-access--read-before-touching-scoring-or-tailoring).
 
 ## Repo layout & stack
 
@@ -95,44 +95,45 @@ TypeScript is capped below 6.1 because `typescript-eslint` 8.x requires
 - **Scheduling:** GitHub Actions cron `0 */6 * * *` (`packages/pipeline`)
 - **Digest email:** Resend free tier — `RESEND_API_KEY`
 - **Target monthly infra cost: $0.** Flag anything that could exceed free tiers
-  (Neon storage, Actions minutes, subscription usage limits for `claude -p`) in
-  `DEPLOY.md`.
+  (Neon storage, Actions minutes, CodeMie usage quota) in `DEPLOY.md`.
 
 ## LLM access — read before touching scoring or tailoring
 
 Model classes: **Haiku-class for scoring**, **Sonnet-class for tailoring**.
 Both go behind an `LlmScorer` interface so the backend can be swapped.
 
-### Credentials: read only prefixed variables — never the ambient ones
+### Credentials: CodeMie gateway only
 
-**This is hard constraint #8 in code form.** `LlmScorer` must read exactly:
+**This is hard constraint #8 in code form.** All LLM calls use the EPAM
+CodeMie gateway — the Anthropic SDK pointed at the CodeMie base URL:
 
-| Backend | Variable |
-|---|---|
-| `claude -p` (subscription) | `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN` |
-| Direct API | `JOBPILOT_ANTHROPIC_API_KEY` |
+```ts
+import Anthropic from '@anthropic-ai/sdk';
 
-and **throw a clear error when neither is set**. It must never fall back to
-`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or `CLAUDE_CODE_OAUTH_TOKEN`.
+const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
+if (!token) throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
 
-Why the prefix is load-bearing: credential precedence is
-`ANTHROPIC_API_KEY` → `ANTHROPIC_AUTH_TOKEN` → OAuth profile, **first match
-wins**. The work Enterprise `ANTHROPIC_API_KEY` is exported on this machine, so
-it silently outranks any personal token — a plain `ANTHROPIC_API_KEY` read, or
-any SDK call with a zero-arg client, bills the employer with no error and no
-visible sign.
+const client = new Anthropic({
+  apiKey: token,
+  baseURL: 'https://codemie.lab.epam.com/code-assistant-api',
+});
+```
 
-**Spawning `claude -p` needs the same care.** The child process inherits the
-shell environment, so it would pick up the ambient work key. Spawn it with a
-scrubbed env: delete `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN`, then set
-`CLAUDE_CODE_OAUTH_TOKEN` from `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN`. Passing the
-parent env through unchanged is the bug to avoid.
+`LlmScorer` reads **only** `JOBPILOT_CODEMIE_TOKEN` and throws a clear error
+when it is not set. It must **never** construct a zero-arg `new Anthropic()`
+or read `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or
+`CLAUDE_CODE_OAUTH_TOKEN`.
 
-**Which account pays is still undecided** (deferred to Phase 3 — personal API
-key vs personal Claude subscription). The safeguard above holds either way and
-must be built before the first real scoring call. Phase 2 needs no LLM at all.
+Why this matters: the work Enterprise `ANTHROPIC_API_KEY` is exported in the
+shell. A zero-arg client or ambient-key read silently uses it and bills Unity
+with no error and no visible sign.
 
-Cost if the API-key path is chosen: see DEPLOY.md "LLM cost".
+`JOBPILOT_CODEMIE_TOKEN` is obtained from `codemie profile status` — the same
+SSO bearer token the `jobpilot` launcher uses. Rotate it daily (it expires in
+~24h) during local development; Phase 4 will decide the CI/CD credential
+strategy when the GitHub Actions workflow is built.
+
+Phase 2 needs no LLM at all.
 
 ### Interactive sessions: launch with `jobpilot`, never plain `claude`
 
@@ -391,7 +392,7 @@ resurface** — that is what this table is for.
      also office-bound wording and `офіс`.
    - Reject junior/intern; reject older than **21 days**.
    - **When unsure — KEEP.** False negatives are worse than false positives.
-4. **LLM scoring** (via `LlmScorer` → `claude -p`, batched) against
+4. **LLM scoring** (via `LlmScorer` → CodeMie gateway, batched) against
    `data/cv-master.md` → strict JSON:
    ```json
    { "score": 0, "matched_keywords": [], "missing_keywords": [],
@@ -454,20 +455,19 @@ from the CV, omit it or record it in `missing_keywords`.
 - `git init` in Phase 0. **Conventional commits.** Default branch: `master`.
   Commit at the end of every phase — **after the user's approval**.
 - `.github/workflows/pipeline.yml`: cron `0 */6 * * *` + `workflow_dispatch`;
-  steps checkout → setup-node 22 + npm cache → `npm ci` → install Claude Code
-  CLI → run pipeline → digest. Secrets: `DATABASE_URL`, `RESEND_API_KEY`, and
-  **one** of `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN` /
-  `JOBPILOT_ANTHROPIC_API_KEY` — named with the prefix so the secret matches
-  what the code reads (see hard constraint #8).
+  steps checkout → setup-node 22 + npm cache → `npm ci` → run pipeline →
+  digest. Secrets: `DATABASE_URL`, `RESEND_API_KEY`, and `JOBPILOT_CODEMIE_TOKEN`
+  (see hard constraint #8). **CI/CD credential strategy for the CodeMie token
+  is decided in Phase 4** — SSO tokens expire in 24h; a service account token
+  or alternative must be confirmed with EPAM before the workflow is wired up.
 - Produce/update **`DEPLOY.md`** at the end of Phase 1 and Phase 4 — exact
   click-by-click, copy-paste instructions assuming free tiers:
   1. create PRIVATE GitHub repo + push (exact git commands),
   2. Neon: create project, pooled connection string, run migrations,
   3. Vercel: import repo, root directory `apps/web`, env vars (`DATABASE_URL`,
      `DASHBOARD_PASSWORD`), deploy,
-  4. From a **personal** login, `claude setup-token` → store as GitHub secret
-     `JOBPILOT_CLAUDE_CODE_OAUTH_TOKEN` (or use a personal
-     `JOBPILOT_ANTHROPIC_API_KEY`), plus the other secrets,
+  4. Obtain a long-lived `JOBPILOT_CODEMIE_TOKEN` (Phase 4 decision) and store
+     as GitHub secret, plus `DATABASE_URL` and `RESEND_API_KEY`,
   5. Resend: domain-less onboarding (send from `onboarding@resend.dev` to the
      user's own address), API key.
 
@@ -486,9 +486,9 @@ from the CV, omit it or record it in `missing_keywords`.
 - **Phase 2 — Discovery (no LLM).** All fetchers + normalization + dedupe + hard
   filters + proposed companies seed list. Run once locally, show funnel numbers
   per source.
-- **Phase 3 — Scoring.** `LlmScorer` via `claude -p` + DB inserts. Full pipeline
-  end-to-end; tune the scoring prompt and threshold **with the user** before
-  proceeding.
+- **Phase 3 — Scoring.** `LlmScorer` via CodeMie gateway + DB inserts. Full
+  pipeline end-to-end; tune the scoring prompt and threshold **with the user**
+  before proceeding.
 - **Phase 4 — Scheduling + digest.** GitHub Actions workflow + Resend digest.
   Deliver `DEPLOY.md` steps 4–5. Verify via manual `workflow_dispatch`.
 - **Phase 5 — Application factory.** `tailor-application` + `follow-up` skills.
