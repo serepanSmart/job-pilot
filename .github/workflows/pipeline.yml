@@ -21,6 +21,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Probe CodeMie gateway
+        run: |
+          echo "Token length: ${#JOBPILOT_CODEMIE_TOKEN}"
+          STATUS=$(node --input-type=module << 'EOF'
+          const token = process.env.JOBPILOT_CODEMIE_TOKEN ?? '';
+          const resp = await fetch('https://codemie.lab.epam.com/code-assistant-api/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': 'proxy-handled',
+              'cookie': '_oauth2_proxy=' + token,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
+          });
+          console.log(resp.status);
+          const body = await resp.text();
+          console.log(body.slice(0, 200));
+          EOF
+          )
+          echo "$STATUS"
+        env:
+          JOBPILOT_CODEMIE_TOKEN: ${{ secrets.JOBPILOT_CODEMIE_TOKEN }}
+
       - name: Run pipeline
         run: npm run pipeline
         env:

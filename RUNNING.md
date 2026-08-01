@@ -180,21 +180,66 @@ prompt is harmless and stores `"theme"` in the profile's `settings.json`.
 
 ## Daily ritual — refresh the CodeMie token
 
-The CodeMie SSO token lives ~24h. Once a day, from inside a `jobpilot` session,
-run this single command to push the current token to GitHub Actions:
+The CodeMie SSO token (`_oauth2_proxy` cookie) lives ~24h. Once a day, run
+this from **any terminal** (inside or outside a `jobpilot` session — it reads
+the encrypted local credentials, never `$ANTHROPIC_AUTH_TOKEN`):
 
 ```bash
-gh secret set JOBPILOT_CODEMIE_TOKEN --repo serepanSmart/job-pilot <<< $ANTHROPIC_AUTH_TOKEN
+# If the session is expired, refresh first (opens browser once a day)
+codemie profile refresh
+
+# Extract the fresh cookie and push it to GitHub Actions
+gh auth switch --user serepanSmart
+node --input-type=module << 'EOF' | gh secret set JOBPILOT_CODEMIE_TOKEN --repo serepanSmart/job-pilot
+import crypto from 'node:crypto';
+import os from 'node:os';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const id = os.hostname() + os.platform() + os.arch();
+const key = crypto.createHash('sha256')
+  .update(crypto.createHash('sha256').update(id).digest('hex'))
+  .digest();
+
+function decrypt(text) {
+  const parts = text.split(':');
+  if (parts.length === 3) {
+    const iv = Buffer.from(parts[0], 'hex');
+    const d = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    d.setAuthTag(Buffer.from(parts[1], 'hex'));
+    return d.update(parts[2], 'hex', 'utf8') + d.final('utf8');
+  }
+  const iv = Buffer.from(parts[0], 'hex');
+  const d = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  return d.update(parts[1], 'hex', 'utf8') + d.final('utf8');
+}
+
+const dir = path.join(os.homedir(), '.codemie', 'credentials');
+const files = fs.readdirSync(dir).filter(f => f.startsWith('sso-') && f.endsWith('.enc'));
+const latest = files.sort().reverse()[0];
+const obj = JSON.parse(decrypt(fs.readFileSync(path.join(dir, latest), 'utf8').trim()));
+process.stdout.write(obj.cookies['_oauth2_proxy']);
+EOF
+echo "Secret updated. Expires: $(node --input-type=module -e "
+import crypto from 'node:crypto'; import os from 'node:os'; import fs from 'node:fs'; import path from 'node:path';
+const id=os.hostname()+os.platform()+os.arch();
+const key=crypto.createHash('sha256').update(crypto.createHash('sha256').update(id).digest('hex')).digest();
+function d(t){const p=t.split(':');if(p.length===3){const iv=Buffer.from(p[0],'hex');const dc=crypto.createDecipheriv('aes-256-gcm',key,iv);dc.setAuthTag(Buffer.from(p[1],'hex'));return dc.update(p[2],'hex','utf8')+dc.final('utf8');}const iv=Buffer.from(p[0],'hex');const dc=crypto.createDecipheriv('aes-256-cbc',key,iv);return dc.update(p[1],'hex','utf8')+dc.final('utf8');}
+const dir=path.join(os.homedir(),'.codemie','credentials');
+const f=fs.readdirSync(dir).filter(x=>x.startsWith('sso-')&&x.endsWith('.enc')).sort().reverse()[0];
+const obj=JSON.parse(d(fs.readFileSync(path.join(dir,f),'utf8').trim()));
+console.log(new Date(obj.expiresAt).toISOString());
+")"
 ```
 
-That is all. The command reads `ANTHROPIC_AUTH_TOKEN` (the live CodeMie token
-injected by `codemie-claude`), and stores it as the `JOBPILOT_CODEMIE_TOKEN`
-GitHub Actions secret. The cron pipeline uses it until it expires; scoring
-degrades gracefully when it does (fetchers and dedupe still run).
+The scorer reads `JOBPILOT_CODEMIE_TOKEN` and, when it is 100+ chars, treats it
+as the raw `_oauth2_proxy` cookie value and injects it as a `cookie:` header.
+The cron pipeline degrades gracefully when the secret is expired (fetchers and
+dedupe still run; scoring is skipped).
 
-**Local pipeline** (`npm run pipeline`) needs no manual export — the `start`
-script auto-falls-back to `ANTHROPIC_AUTH_TOKEN` when `JOBPILOT_CODEMIE_TOKEN`
-is not explicitly set.
+**Local pipeline** (`npm run pipeline`) works without any manual step — the
+local `.env` keeps `JOBPILOT_CODEMIE_TOKEN=proxy-handled`, which tells the
+scorer to send requests through the running `codemie-claude` local proxy.
 
 For a long-lived CI token (EPAM service account), see `DEPLOY.md` Step 4.
 
