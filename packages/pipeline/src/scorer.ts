@@ -22,19 +22,33 @@ function loadCv(): string {
   return cvCache;
 }
 
+const SENTINEL = new Set(['proxy-handled', 'sso-provided']);
+
 function getClient(): Anthropic {
   if (clientCache === null) {
     const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
     if (!token) {
-      throw new Error(
-        'JOBPILOT_CODEMIE_TOKEN is not set. ' +
-          'Inside a jobpilot session: set JOBPILOT_CODEMIE_TOKEN=proxy-handled in .env'
-      );
+      throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
     }
     const baseURL =
       process.env['CODEMIE_BASE_URL'] ??
       'https://codemie.lab.epam.com/code-assistant-api';
-    clientCache = new Anthropic({ apiKey: token, baseURL });
+
+    if (SENTINEL.has(token)) {
+      clientCache = new Anthropic({ apiKey: token, baseURL });
+    } else if (token.startsWith('{') || token.length > 200) {
+      clientCache = new Anthropic({
+        apiKey: 'dummy',
+        baseURL,
+        defaultHeaders: { Cookie: `_oauth2_proxy=${token}` },
+      });
+    } else {
+      clientCache = new Anthropic({
+        apiKey: token,
+        baseURL,
+        defaultHeaders: { Authorization: `Bearer ${token}` },
+      });
+    }
   }
   return clientCache;
 }
