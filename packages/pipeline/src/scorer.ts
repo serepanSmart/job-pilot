@@ -22,22 +22,6 @@ function loadCv(): string {
   return cvCache;
 }
 
-const SENTINEL = new Set(['proxy-handled', 'sso-provided']);
-
-function makeCookieFetch(
-  cookieValue: string
-): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
-  return async (
-    input: string | URL | Request,
-    init?: RequestInit
-  ): Promise<Response> => {
-    const headers = new Headers(init?.headers);
-    headers.set('x-api-key', 'proxy-handled');
-    headers.set('cookie', `_oauth2_proxy=${cookieValue}`);
-    return fetch(input as string, { ...init, headers });
-  };
-}
-
 function getClient(): Anthropic {
   if (clientCache === null) {
     const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
@@ -48,13 +32,11 @@ function getClient(): Anthropic {
       process.env['CODEMIE_BASE_URL'] ??
       'https://codemie.lab.epam.com/code-assistant-api';
 
-    if (SENTINEL.has(token)) {
-      clientCache = new Anthropic({ apiKey: token, baseURL });
-    } else if (token.length > 100) {
+    if (token.length > 50) {
       clientCache = new Anthropic({
-        apiKey: 'dummy',
+        apiKey: 'proxy-handled',
         baseURL,
-        fetch: makeCookieFetch(token),
+        defaultHeaders: { cookie: `_oauth2_proxy=${token}` },
       });
     } else {
       clientCache = new Anthropic({ apiKey: token, baseURL });
