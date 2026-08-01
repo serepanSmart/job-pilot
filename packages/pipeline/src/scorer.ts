@@ -24,6 +24,25 @@ function loadCv(): string {
 
 const SENTINEL = new Set(['proxy-handled', 'sso-provided']);
 
+function makeCookieFetch(
+  cookieValue: string
+): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
+  return async (
+    input: string | URL | Request,
+    init?: RequestInit
+  ): Promise<Response> => {
+    const rawHeaders = (init?.headers ?? {}) as Record<string, string>;
+    const cleaned: Record<string, string> = {};
+    for (const [k, v] of Object.entries(rawHeaders)) {
+      if (k.toLowerCase() !== 'x-api-key') {
+        cleaned[k] = v;
+      }
+    }
+    cleaned['Cookie'] = `_oauth2_proxy=${cookieValue}`;
+    return fetch(input as string, { ...init, headers: cleaned });
+  };
+}
+
 function getClient(): Anthropic {
   if (clientCache === null) {
     const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
@@ -36,18 +55,14 @@ function getClient(): Anthropic {
 
     if (SENTINEL.has(token)) {
       clientCache = new Anthropic({ apiKey: token, baseURL });
-    } else if (token.startsWith('{') || token.length > 200) {
+    } else if (token.length > 100) {
       clientCache = new Anthropic({
         apiKey: 'dummy',
         baseURL,
-        defaultHeaders: { Cookie: `_oauth2_proxy=${token}` },
+        fetch: makeCookieFetch(token),
       });
     } else {
-      clientCache = new Anthropic({
-        apiKey: token,
-        baseURL,
-        defaultHeaders: { Authorization: `Bearer ${token}` },
-      });
+      clientCache = new Anthropic({ apiKey: token, baseURL });
     }
   }
   return clientCache;
