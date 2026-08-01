@@ -4,6 +4,7 @@ import { SCORE_THRESHOLD } from '@jobpilot/db';
 import { hardFilter } from './filter';
 import { filterUnseen, markSeen } from './dedupe';
 import { autoGrow } from './auto-grow';
+import { sendDigest } from './digest';
 import { insertScoredJobs } from './insert';
 import { scoreBatch } from './scorer';
 import { fetchRemotive } from './fetchers/remotive';
@@ -220,6 +221,13 @@ async function run(): Promise<void> {
 
   const scoredByKey = new Map<SourceKey, number>();
   const insertedByKey = new Map<SourceKey, number>();
+  let insertedJobs: {
+    company: string;
+    id: string;
+    role: string;
+    score: number | null;
+    verdict: string | null;
+  }[] = [];
 
   if (hasToken && freshJobs.length > 0) {
     console.info('[pipeline] Scoring %d fresh jobs...', freshJobs.length);
@@ -249,15 +257,19 @@ async function run(): Promise<void> {
     });
 
     if (toInsert.length > 0) {
-      const insertedCount = await insertScoredJobs(toInsert);
-      for (const job of toInsert) {
+      const rows = await insertScoredJobs(toInsert);
+      insertedJobs = rows.map((r) => ({
+        company: r.company,
+        id: r.id,
+        role: r.role,
+        score: r.score,
+        verdict: r.verdict,
+      }));
+      for (const job of rows) {
         const key = displayKey(job.source);
         insertedByKey.set(key, (insertedByKey.get(key) ?? 0) + 1);
       }
-      console.info(
-        '[pipeline] Inserted %d jobs into jobs table',
-        insertedCount
-      );
+      console.info('[pipeline] Inserted %d jobs into jobs table', rows.length);
     }
   }
 
@@ -286,6 +298,8 @@ async function run(): Promise<void> {
   }
 
   printFunnel(funnel, newCompanies, hasToken);
+
+  await sendDigest(insertedJobs);
 }
 
 await run();

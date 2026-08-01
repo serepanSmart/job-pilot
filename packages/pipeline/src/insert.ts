@@ -1,13 +1,13 @@
 import { getDb, jobs } from '@jobpilot/db';
-import type { NewJob } from '@jobpilot/db';
+import type { Job, NewJob } from '@jobpilot/db';
 import { contentHash } from './dedupe';
 import type { ScoredJob } from './types';
 
 export async function insertScoredJobs(
   scoredJobs: ScoredJob[]
-): Promise<number> {
+): Promise<Job[]> {
   if (!scoredJobs.length) {
-    return 0;
+    return [];
   }
 
   const db = getDb();
@@ -30,7 +30,5 @@ export async function insertScoredJobs(
     ...(j.postedAt !== null ? { dateFound: j.postedAt } : {}),
   }));
 
-  await db.insert(jobs).values(toInsert).onConflictDoNothing();
-
-  return toInsert.length;
+  return db.insert(jobs).values(toInsert).onConflictDoNothing().returning();
 }

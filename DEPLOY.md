@@ -177,15 +177,99 @@ nowhere near the 1M/month allowance.
 
 ---
 
-## Steps 4–5 — coming in Phase 4
+## Step 4 — GitHub Actions cron
 
-- GitHub Actions cron (`0 */6 * * *`) with secrets `DATABASE_URL`,
-  `RESEND_API_KEY`, and `JOBPILOT_CODEMIE_TOKEN`. All LLM calls go through the
-  EPAM CodeMie gateway — no personal Anthropic key is needed. The CI/CD
-  credential strategy for the CodeMie token (which has a 24h SSO lifetime) will
-  be decided in Phase 4.
-- Resend digest email, sending from `onboarding@resend.dev` to your own address
-  (no domain verification needed).
+The pipeline workflow lives at `.github/workflows/pipeline.yml` and runs on a
+`0 */6 * * *` cron (every 6 hours) plus a manual `workflow_dispatch` trigger.
+
+### 4a — Secrets (required)
+
+In the GitHub repo go to **Settings → Secrets and variables → Actions → Secrets**
+and add:
+
+| Secret | Value |
+|---|---|
+| `DATABASE_URL` | Pooled Neon connection string — use a **fresh** password (reset in Neon, different from the Vercel one) |
+| `RESEND_API_KEY` | From Resend (see Step 5) |
+| `JOBPILOT_CODEMIE_TOKEN` | SSO bearer token — see note below |
+| `DIGEST_EMAIL_TO` | Your Gmail address |
+
+### 4b — Variables (non-secret, set under Actions → Variables)
+
+| Variable | Value |
+|---|---|
+| `DASHBOARD_URL` | Your Vercel deployment URL, e.g. `https://job-pilot-xyz.vercel.app` — no trailing slash |
+| `DIGEST_EMAIL_FROM` | `onboarding@resend.dev` (or a verified sender if you add a domain later) |
+
+### 4c — `JOBPILOT_CODEMIE_TOKEN` CI/CD strategy
+
+The SSO bearer token from `codemie profile status` expires in ~24h and cannot
+be automated directly. Two practical options:
+
+**Option A — Manual refresh (simplest for now):**
+Re-run `codemie profile status`, copy the token, and update the GitHub secret
+before each pipeline run. Feasible while the pipeline is run on demand; breaks
+unattended cron after 24h.
+
+**Option B — EPAM service account (recommended for cron):**
+Request a long-lived API key from the EPAM CodeMie team. This is the intended
+path for CI/CD. Confirm with your EPAM contact before Phase 4 goes live.
+
+Until Option B is available, the workflow is fully wired but scoring will fail
+gracefully once the token expires — the fetchers and dedupe still run, jobs get
+added to `seen_hashes`, and the funnel numbers are logged. No data loss.
+
+### 4d — Trigger a manual run
+
+After adding all secrets/variables:
+
+```bash
+gh workflow run pipeline.yml
+gh run watch   # stream logs
+```
+
+Private repos get 2,000 Actions minutes/month on the GitHub Free plan. The 6-hour
+cron is ~120 runs/month; even at 5 min/run that is ~600 minutes — comfortably
+inside the allowance.
+
+---
+
+## Step 5 — Resend digest
+
+1. Go to **https://resend.com** and sign up (free, no credit card).
+2. In the dashboard go to **API Keys → Create API Key**. Name it `job-pilot`.
+   Copy the key — it is shown once.
+3. Add it as the `RESEND_API_KEY` GitHub secret (Step 4a above) and to your
+   local `.env` for testing.
+4. Set `DIGEST_EMAIL_TO` to your Gmail address. On Resend's free plan the
+   domain-less sender `onboarding@resend.dev` can only deliver to the address
+   you verified during sign-up — use that same address.
+5. Set `DASHBOARD_URL` locally in `.env`:
+
+   ```
+   DASHBOARD_URL=http://localhost:3000
+   ```
+
+   In GitHub Actions Variables set it to the Vercel deployment URL.
+
+6. Test the digest locally (requires at least one job in the `jobs` table):
+
+   ```bash
+   node --use-system-ca --import tsx/esm - <<'EOF'
+   import './packages/pipeline/src/env.ts';
+   import { getDb, jobs } from './packages/db/src/index.ts';
+   import { sendDigest } from './packages/pipeline/src/digest.ts';
+   const db = getDb();
+   const rows = await db.select().from(jobs).limit(3);
+   await sendDigest(rows.map(r => ({ company: r.company, id: r.id, role: r.role, score: r.score, verdict: r.verdict })));
+   EOF
+   ```
+
+   You should receive a purple-themed email with a score table and an
+   "Open Dashboard" button.
+
+**Free-tier watch:** Resend's free plan includes 3,000 emails/month and 100/day.
+One digest per pipeline run = at most 4 emails/day — nowhere near the limit.
 
 Private repos get 2,000 Actions minutes/month on the GitHub Free plan. The 6-hour
 cron is ~120 runs/month, so even at 5 minutes per run that is ~600 minutes —
