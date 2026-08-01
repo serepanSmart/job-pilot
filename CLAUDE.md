@@ -4,10 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-**Phase 0 complete — Phase 1 is next.** The turborepo skeleton, all configs, and
-the git repo exist, and the verification gate passes (`lint`, `typecheck`,
-`build`). There is no database, no theme, no real pages, and no
-`.claude/skills/` yet.
+**Phase 5 complete.** All phases 0–5 are done. DB, full UI, auth, discovery pipeline, LLM scoring, digest email, GitHub Actions cron, and the application factory skills are in place.
 
 This file is the operative spec and **supersedes `PROMPT.md`**, which is kept
 only as the origin document. Where the two disagree, this file wins — notably
@@ -444,17 +441,22 @@ resurface** — that is what this table is for.
 
 ## Skills (`.claude/skills/`)
 
-1. **`find-jobs`** — run the full pipeline locally, print funnel numbers
-   (fetched → deduped → filtered → scored → inserted).
-2. **`score-job`** — score a single pasted URL/JD (e.g. from a Djinni/Wellfound/
-   LinkedIn alert email) and insert into the DB.
-3. **`tailor-application`** — given a job id: tailored CV (`.docx` + PDF) + cover
-   letter + standard form answers (salary, notice period, work auth, timezone),
-   saved to `output/applications/{company}-{role}/`, status → `tailored`. Uses
-   the emphasis presets and "known gaps" from the master CV. ATS rules from Hard
-   Constraints apply.
-4. **`follow-up`** — list applications 7+ days after applying with no response,
-   draft polite follow-up emails.
+All four skills are implemented in `.claude/skills/`. Invoke each with its trigger:
+
+1. **`/find-jobs`** (`.claude/skills/find-jobs/SKILL.md`) — run the full pipeline
+   locally, print funnel numbers (fetched → deduped → filtered → scored → inserted).
+2. **`/score-job`** (`.claude/skills/score-job/SKILL.md`) — score a single pasted
+   URL/JD (e.g. from a Djinni/Wellfound/LinkedIn alert email) and insert into the DB.
+3. **`/tailor-application`** (`.claude/skills/tailor-application/SKILL.md`) — given
+   a job id: tailored CV (`.docx`) + cover letter + standard form answers (salary,
+   notice period, work auth, timezone), saved to
+   `output/applications/{company}-{role}/`, status → `tailored`. Uses the emphasis
+   presets and "known gaps" from the master CV. ATS rules from Hard Constraints apply.
+4. **`/follow-up`** (`.claude/skills/follow-up/SKILL.md`) — list applications 7+
+   days after applying with no response, draft polite follow-up emails.
+
+When the user types any of these triggers, invoke the Skill tool with the matching
+skill name before doing anything else.
 
 ## CV handling rules
 
