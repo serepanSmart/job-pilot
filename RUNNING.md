@@ -178,6 +178,26 @@ PY
 Both keys are read by the `claude` binary (verified against 2.1.218). The theme
 prompt is harmless and stores `"theme"` in the profile's `settings.json`.
 
+## Daily ritual — refresh the CodeMie token
+
+The CodeMie SSO token lives ~24h. Once a day, from inside a `jobpilot` session,
+run this single command to push the current token to GitHub Actions:
+
+```bash
+gh secret set JOBPILOT_CODEMIE_TOKEN --repo serepanSmart/job-pilot <<< $ANTHROPIC_AUTH_TOKEN
+```
+
+That is all. The command reads `ANTHROPIC_AUTH_TOKEN` (the live CodeMie token
+injected by `codemie-claude`), and stores it as the `JOBPILOT_CODEMIE_TOKEN`
+GitHub Actions secret. The cron pipeline uses it until it expires; scoring
+degrades gracefully when it does (fetchers and dedupe still run).
+
+**Local pipeline** (`npm run pipeline`) needs no manual export — the `start`
+script auto-falls-back to `ANTHROPIC_AUTH_TOKEN` when `JOBPILOT_CODEMIE_TOKEN`
+is not explicitly set.
+
+For a long-lived CI token (EPAM service account), see `DEPLOY.md` Step 4.
+
 ## Model
 
 The active profile (`claude-4-6`) pins **Sonnet 4.6** as the default, with

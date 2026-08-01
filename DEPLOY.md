@@ -203,21 +203,22 @@ and add:
 
 ### 4c — `JOBPILOT_CODEMIE_TOKEN` CI/CD strategy
 
-The SSO bearer token from `codemie profile status` expires in ~24h and cannot
-be automated directly. Two practical options:
+The CodeMie SSO token expires in ~24h. Chosen approach: **manual daily refresh**
+via one command run from inside a `jobpilot` session:
 
-**Option A — Manual refresh (simplest for now):**
-Re-run `codemie profile status`, copy the token, and update the GitHub secret
-before each pipeline run. Feasible while the pipeline is run on demand; breaks
-unattended cron after 24h.
+```bash
+gh secret set JOBPILOT_CODEMIE_TOKEN --repo serepanSmart/job-pilot <<< $ANTHROPIC_AUTH_TOKEN
+```
 
-**Option B — EPAM service account (recommended for cron):**
-Request a long-lived API key from the EPAM CodeMie team. This is the intended
-path for CI/CD. Confirm with your EPAM contact before Phase 4 goes live.
+`ANTHROPIC_AUTH_TOKEN` is the live CodeMie bearer token injected by
+`codemie-claude`. Run this once a day (e.g. when starting your morning session).
 
-Until Option B is available, the workflow is fully wired but scoring will fail
-gracefully once the token expires — the fetchers and dedupe still run, jobs get
-added to `seen_hashes`, and the funnel numbers are logged. No data loss.
+When the token expires between refreshes the cron continues running — fetchers
+and dedupe still work, jobs get added to `seen_hashes`, and the funnel numbers
+are logged. Scoring is skipped gracefully. No data loss.
+
+Future upgrade path: request a long-lived service account token from the EPAM
+CodeMie team and store it as the secret permanently.
 
 ### 4d — Trigger a manual run
 
