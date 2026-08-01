@@ -228,11 +228,14 @@ async function run(): Promise<void> {
     score: number | null;
     verdict: string | null;
   }[] = [];
+  let jobsToMarkSeen = freshJobs;
 
   if (hasToken && freshJobs.length > 0) {
     console.info('[pipeline] Scoring %d fresh jobs...', freshJobs.length);
 
     const scoreResults = await scoreBatch(freshJobs);
+
+    jobsToMarkSeen = freshJobs.filter((_, i) => scoreResults[i] !== null);
 
     const toInsert = freshJobs.flatMap((job, i) => {
       const result = scoreResults[i];
@@ -273,7 +276,7 @@ async function run(): Promise<void> {
     }
   }
 
-  await markSeen(freshJobs);
+  await markSeen(jobsToMarkSeen);
 
   const funnel = new Map<SourceKey, FunnelRow>();
   const allKeys = new Set([
