@@ -63,19 +63,19 @@ Produce a JSON object matching this exact shape (all fields required):
   "name": "Serhii Vovna",
   "targetTitle": "<role title from the JD — use JD's spelling>",
   "location": "Vinnytsia, Ukraine (EET/EEST, UTC+2/+3)",
-  "workMode": "Remote · B2B/Contract",
+  "workMode": "Remote | B2B/Contract",
   "email": "serepanvovna@gmail.com",
   "phone": "+380 63 495 3048",
-  "linkedin": "linkedin.com/in/serhii-vovna-211288191",
-  "github": "github.com/serepanSmart",
-  "portfolio": "portfolio-swtwo.vercel.app",
+  "linkedin": "https://linkedin.com/in/serhii-vovna-211288191",
+  "github": "https://github.com/serepanSmart",
+  "portfolio": "https://portfolio-swtwo.vercel.app",
   "summary": "<tailored 3-4 sentence summary — lead with emphasis preset, mirror JD keywords>",
   "technologies": {
     "Languages": "TypeScript, JavaScript (ES6+), HTML5, CSS3",
     "Frontend": "<reorder to put JD-matched tech first>",
     "AI & LLM": "Anthropic Claude API, MCP, Agent Skills, AI Subagents, LLM Integration",
-    "UI/UX": "<keep relevant, drop irrelevant>",
-    "Testing": "Jest, React Testing Library, Vitest, TDD",
+    "UI & Design Systems": "<keep relevant, drop irrelevant>",
+    "Testing": "Vitest, Jest, React Testing Library, TDD",
     "Build & Tooling": "Vite, Webpack, Monorepo (Lerna), NPM/Yarn, Git, CI/CD",
     "Architecture": "Micro-frontends, Monorepos, Design Patterns, SOLID/DRY/KISS/YAGNI",
     "Performance": "Core Web Vitals, Bundle Optimization, Code-Splitting, Lazy Loading",
@@ -84,40 +84,53 @@ Produce a JSON object matching this exact shape (all fields required):
   "coreCompetencies": ["<8-10 competencies, lead with emphasis-preset ones>"],
   "experience": [
     {
-      "company": "EPAM Systems — Remote / B2B Contractor",
+      "company": "EPAM Systems",
       "companyLocation": "Ukraine (remote)",
-      "companyPeriod": "Aug 2021 – Present",
+      "companyPeriod": "Aug 2021 - Present",
       "roles": [
         {
           "title": "Lead Frontend Developer",
-          "period": "Apr 2023 – Present",
+          "period": "Apr 2023 - Present",
           "bullets": ["<reorder bullets to lead with emphasis preset; max 5 bullets; mirror JD keywords; never invent>"],
           "tech": "React, TypeScript, <keep JD-relevant tech from cv-master>"
         },
         {
-          "title": "Frontend Team Lead / Key Developer",
-          "period": "Jan 2023 – Apr 2023",
+          "title": "Frontend Team Lead",
+          "period": "Jan 2023 - Apr 2023",
           "bullets": ["<max 3 bullets>"],
           "tech": "React, Redux Toolkit, React Query, TypeScript, ..."
         },
         {
           "title": "Frontend Developer",
-          "period": "Aug 2021 – Dec 2022",
+          "period": "Aug 2021 - Dec 2022",
           "bullets": ["<max 3 bullets>"],
           "tech": "JavaScript (Core), HTML, SCSS, Grunt, JSP/GWT"
         }
       ]
     },
     {
-      "company": "SMART-UI — Outsourcing Agency | Frontend Engineer",
-      "companyLocation": "Ukraine",
-      "companyPeriod": "2018 – 2021",
+      "company": "Audienzz (via SMART-UI)",
+      "companyLocation": "Ukraine (remote)",
+      "companyPeriod": "Sep 2020 - Aug 2021",
       "roles": [
         {
-          "title": "Audienzz — Adconsole (Digital Advertising)",
-          "period": "Sep 2020 – Aug 2021",
+          "title": "Frontend Engineer",
+          "period": "Sep 2020 - Aug 2021",
           "bullets": ["<max 3 bullets — include if JD values Next.js, monorepo, design systems>"],
           "tech": "Next.js, React, TypeScript, Styled Components, Storybook, Lerna"
+        }
+      ]
+    },
+    {
+      "company": "iCIMS (via SMART-UI)",
+      "companyLocation": "Ukraine (remote)",
+      "companyPeriod": "Oct 2019 - Aug 2020",
+      "roles": [
+        {
+          "title": "Frontend Engineer",
+          "period": "Oct 2019 - Aug 2020",
+          "bullets": ["<2 bullets — include only if role values MPA, enterprise apps, build optimization>"],
+          "tech": "JavaScript, HTML5, SCSS, Webpack"
         }
       ]
     }

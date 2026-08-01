@@ -133,13 +133,13 @@ export function buildDocument(cv: CvData): Document {
 
   children.push(h1('Professional Summary'), body(cv.summary));
 
-  children.push(h1('Key Technologies'));
+  children.push(h1('Technical Skills'));
   for (const [cat, techs] of Object.entries(cv.technologies)) {
     children.push(body(`${cat}: ${techs}`, { bold: false }));
   }
 
   children.push(h1('Core Competencies'));
-  children.push(body(cv.coreCompetencies.join(' · ')));
+  children.push(body(cv.coreCompetencies.join(' | ')));
 
   children.push(h1('Professional Experience'));
   for (const exp of cv.experience) {
@@ -184,7 +184,7 @@ export function buildDocument(cv: CvData): Document {
         children,
         properties: {
           page: {
-            margin: { bottom: 720, left: 1080, right: 1080, top: 720 },
+            margin: { bottom: 1080, left: 1080, right: 1080, top: 1080 },
           },
         },
       },
