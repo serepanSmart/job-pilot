@@ -32,7 +32,7 @@ function initClient(): void {
     throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
   }
   const baseURL =
-    process.env['CODEMIE_BASE_URL'] ??
+    process.env['CODEMIE_BASE_URL'] ||
     'https://codemie.lab.epam.com/code-assistant-api';
 
   console.info('[scorer] token length=%d baseURL=%s', token.length, baseURL);
@@ -50,7 +50,7 @@ async function callApi(
 ): Promise<{ content: { type: string; text: string }[] }> {
   if (cookieToken !== null) {
     const baseURL =
-      process.env['CODEMIE_BASE_URL'] ??
+      process.env['CODEMIE_BASE_URL'] ||
       'https://codemie.lab.epam.com/code-assistant-api';
     const resp = await fetch(`${baseURL}/v1/messages`, {
       method: 'POST',
