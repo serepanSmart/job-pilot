@@ -14,6 +14,7 @@ const CV_PATH = path.resolve(DIR, '../../../data/cv-master.md');
 
 let cvCache: string | null = null;
 let clientCache: Anthropic | null = null;
+let cookieToken: string | null = null;
 
 function loadCv(): string {
   if (cvCache === null) {
@@ -22,27 +23,74 @@ function loadCv(): string {
   return cvCache;
 }
 
-function getClient(): Anthropic {
-  if (clientCache === null) {
-    const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
-    if (!token) {
-      throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
-    }
+function initClient(): void {
+  if (clientCache !== null) {
+    return;
+  }
+  const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
+  if (!token) {
+    throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
+  }
+  const baseURL =
+    process.env['CODEMIE_BASE_URL'] ??
+    'https://codemie.lab.epam.com/code-assistant-api';
+
+  console.info('[scorer] token length=%d baseURL=%s', token.length, baseURL);
+
+  if (token.length > 50) {
+    cookieToken = token;
+    clientCache = new Anthropic({ apiKey: 'proxy-handled', baseURL });
+  } else {
+    clientCache = new Anthropic({ apiKey: token, baseURL });
+  }
+}
+
+async function callApi(
+  job: PipelineJob
+): Promise<{ content: { type: string; text: string }[] }> {
+  if (cookieToken !== null) {
     const baseURL =
       process.env['CODEMIE_BASE_URL'] ??
       'https://codemie.lab.epam.com/code-assistant-api';
-
-    if (token.length > 50) {
-      clientCache = new Anthropic({
-        apiKey: 'proxy-handled',
-        baseURL,
-        defaultHeaders: { cookie: `_oauth2_proxy=${token}` },
-      });
-    } else {
-      clientCache = new Anthropic({ apiKey: token, baseURL });
+    const resp = await fetch(`${baseURL}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        cookie: `_oauth2_proxy=${cookieToken}`,
+        'x-api-key': 'proxy-handled',
+      },
+      body: JSON.stringify({
+        max_tokens: 512,
+        messages: [{ content: buildUserMessage(job), role: 'user' }],
+        model: MODEL,
+        system: buildSystemPrompt(),
+      }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      throw new Error(`${resp.status} ${body}`);
     }
+    return resp.json() as Promise<{
+      content: { type: string; text: string }[];
+    }>;
   }
-  return clientCache;
+  if (clientCache === null) {
+    throw new Error('client not initialised');
+  }
+  const response = await clientCache.messages.create({
+    max_tokens: 512,
+    messages: [{ content: buildUserMessage(job), role: 'user' }],
+    model: MODEL,
+    system: buildSystemPrompt(),
+  });
+  return {
+    content: response.content.map((b) =>
+      b.type === 'text'
+        ? { type: 'text', text: b.text }
+        : { type: b.type, text: '' }
+    ),
+  };
 }
 
 const RawScoreSchema = z.object({
@@ -101,15 +149,11 @@ ${job.description.slice(0, MAX_DESC_CHARS)}`;
 
 export async function scoreJob(job: PipelineJob): Promise<ScoreResult | null> {
   try {
-    const response = await getClient().messages.create({
-      max_tokens: 512,
-      messages: [{ content: buildUserMessage(job), role: 'user' }],
-      model: MODEL,
-      system: buildSystemPrompt(),
-    });
+    initClient();
+    const response = await callApi(job);
 
     const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .filter((b) => b.type === 'text')
       .map((b) => b.text)
       .join('');
 
