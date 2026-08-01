@@ -32,14 +32,10 @@ function makeCookieFetch(
     init?: RequestInit
   ): Promise<Response> => {
     const rawHeaders = (init?.headers ?? {}) as Record<string, string>;
-    const cleaned: Record<string, string> = {};
-    for (const [k, v] of Object.entries(rawHeaders)) {
-      if (k.toLowerCase() !== 'x-api-key') {
-        cleaned[k] = v;
-      }
-    }
-    cleaned['Cookie'] = `_oauth2_proxy=${cookieValue}`;
-    return fetch(input as string, { ...init, headers: cleaned });
+    const patched: Record<string, string> = { ...rawHeaders };
+    patched['x-api-key'] = 'proxy-handled';
+    patched['cookie'] = `_oauth2_proxy=${cookieValue}`;
+    return fetch(input as string, { ...init, headers: patched });
   };
 }
 
