@@ -1,9 +1,11 @@
 import type { PipelineJob } from './types';
 
 const TITLE_RE =
-  /frontend|front-end|front end|react|ui engineer|web engineer|fullstack|full-stack|full stack/i;
+  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack/i;
 
 const REACT_DESC_RE = /\breact\b/i;
+
+const REJECT_MOBILE_RE = /\breact native\b/i;
 
 const REJECT_LOCATION_RE =
   /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required/i;
@@ -16,6 +18,9 @@ const JUNIOR_RE =
 const MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
 
 export function passesTitleFilter(job: PipelineJob): boolean {
+  if (REJECT_MOBILE_RE.test(job.role)) {
+    return false;
+  }
   return TITLE_RE.test(job.role) || REACT_DESC_RE.test(job.description);
 }
 

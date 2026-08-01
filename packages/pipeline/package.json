@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts",
+    "start": "NODE_OPTIONS=--use-system-ca tsx src/index.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@jobpilot/db": "*",
     "drizzle-orm": "^0.45.2",
     "fast-xml-parser": "^4.5.3",

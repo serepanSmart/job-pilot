@@ -74,6 +74,10 @@ export async function fetchHNAlgolia(
   signal?: AbortSignal
 ): Promise<PipelineJob[]> {
   try {
+    const headers = {
+      'User-Agent':
+        'Mozilla/5.0 (compatible; JobPilot/1.0; +https://github.com)',
+    };
     const storiesRes = await fetch(
       'https://hn.algolia.com/api/v1/search?' +
         new URLSearchParams({
@@ -81,7 +85,7 @@ export async function fetchHNAlgolia(
           query: 'Ask HN: Who is hiring?',
           tags: 'story',
         }),
-      { signal }
+      { headers, signal }
     );
     if (!storiesRes.ok) {
       throw new Error(`HTTP ${storiesRes.status}`);
@@ -105,7 +109,7 @@ export async function fetchHNAlgolia(
           hitsPerPage: '1000',
           tags: `comment,story_${storyId}`,
         }),
-      { signal }
+      { headers, signal }
     );
     if (!commentsRes.ok) {
       throw new Error(`HTTP ${commentsRes.status}`);

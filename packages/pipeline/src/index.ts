@@ -1,8 +1,11 @@
 import './env';
 
+import { SCORE_THRESHOLD } from '@jobpilot/db';
 import { hardFilter } from './filter';
 import { filterUnseen, markSeen } from './dedupe';
 import { autoGrow } from './auto-grow';
+import { insertScoredJobs } from './insert';
+import { scoreBatch } from './scorer';
 import { fetchRemotive } from './fetchers/remotive';
 import { fetchRemoteOK } from './fetchers/remoteok';
 import { fetchArbeitnow } from './fetchers/arbeitnow';
@@ -29,6 +32,8 @@ interface FunnelRow {
   fetched: number;
   filtered: number;
   fresh: number;
+  inserted?: number;
+  scored?: number;
 }
 
 function displayKey(source: string): SourceKey {
@@ -52,11 +57,13 @@ function isAggregator(source: string): boolean {
 
 function printFunnel(
   funnel: Map<SourceKey, FunnelRow>,
-  newCompanies: number
+  newCompanies: number,
+  withScoring: boolean
 ): void {
   const COL_W = 18;
-  const sep = '-'.repeat(COL_W + 30);
-  const header = `${'Source'.padEnd(COL_W)} ${'Fetched'.padStart(8)} ${'Filtered'.padStart(9)} ${'New'.padStart(6)}`;
+  const extraCols = withScoring ? '  Scored  Inserted' : '';
+  const sep = '-'.repeat(COL_W + 30 + (withScoring ? 18 : 0));
+  const header = `${'Source'.padEnd(COL_W)} ${'Fetched'.padStart(8)} ${'Filtered'.padStart(9)} ${'New'.padStart(6)}${extraCols}`;
 
   console.info('\n[pipeline] %s', sep);
   console.info('[pipeline] %s', header);
@@ -65,6 +72,8 @@ function printFunnel(
   let totalFetched = 0;
   let totalFiltered = 0;
   let totalFresh = 0;
+  let totalScored = 0;
+  let totalInserted = 0;
 
   const ORDER: SourceKey[] = [
     'remotive',
@@ -83,25 +92,35 @@ function printFunnel(
     if (!row) {
       continue;
     }
+    const scoringCols = withScoring
+      ? `  ${String(row.scored ?? 0).padStart(6)}  ${String(row.inserted ?? 0).padStart(8)}`
+      : '';
     console.info(
-      '[pipeline] %s %s %s %s',
+      '[pipeline] %s %s %s %s%s',
       key.padEnd(COL_W),
       String(row.fetched).padStart(8),
       String(row.filtered).padStart(9),
-      String(row.fresh).padStart(6)
+      String(row.fresh).padStart(6),
+      scoringCols
     );
     totalFetched += row.fetched;
     totalFiltered += row.filtered;
     totalFresh += row.fresh;
+    totalScored += row.scored ?? 0;
+    totalInserted += row.inserted ?? 0;
   }
 
   console.info('[pipeline] %s', sep);
+  const totalScoringCols = withScoring
+    ? `  ${String(totalScored).padStart(6)}  ${String(totalInserted).padStart(8)}`
+    : '';
   console.info(
-    '[pipeline] %s %s %s %s',
+    '[pipeline] %s %s %s %s%s',
     'TOTAL'.padEnd(COL_W),
     String(totalFetched).padStart(8),
     String(totalFiltered).padStart(9),
-    String(totalFresh).padStart(6)
+    String(totalFresh).padStart(6),
+    totalScoringCols
   );
   console.info('[pipeline] %s\n', sep);
 
@@ -111,14 +130,31 @@ function printFunnel(
       newCompanies
     );
   }
-  console.info(
-    '[pipeline] Done. %d new job(s) added to seen_hashes.',
-    totalFresh
-  );
+
+  if (withScoring) {
+    console.info(
+      '[pipeline] Done. %d scored, %d inserted into jobs.',
+      totalScored,
+      totalInserted
+    );
+  } else {
+    console.info(
+      '[pipeline] Done. %d new job(s) added to seen_hashes.',
+      totalFresh
+    );
+  }
 }
 
 async function run(): Promise<void> {
-  console.info('[pipeline] Phase 2 - discovery (no LLM). Starting...');
+  console.info('[pipeline] Starting...');
+
+  const hasToken = Boolean(process.env['JOBPILOT_CODEMIE_TOKEN']);
+
+  if (!hasToken) {
+    console.warn(
+      '[pipeline] JOBPILOT_CODEMIE_TOKEN not set — scoring skipped, jobs will not be inserted'
+    );
+  }
 
   const controller = new AbortController();
   const { signal } = controller;
@@ -176,29 +212,80 @@ async function run(): Promise<void> {
 
   const freshJobs = await filterUnseen(filtered);
 
-  await markSeen(freshJobs);
-
   const freshByKey = new Map<SourceKey, number>();
   for (const job of freshJobs) {
     const key = displayKey(job.source);
     freshByKey.set(key, (freshByKey.get(key) ?? 0) + 1);
   }
 
+  const scoredByKey = new Map<SourceKey, number>();
+  const insertedByKey = new Map<SourceKey, number>();
+
+  if (hasToken && freshJobs.length > 0) {
+    console.info('[pipeline] Scoring %d fresh jobs...', freshJobs.length);
+
+    const scoreResults = await scoreBatch(freshJobs);
+
+    const toInsert = freshJobs.flatMap((job, i) => {
+      const result = scoreResults[i];
+      if (result === null || result === undefined) {
+        return [];
+      }
+      const key = displayKey(job.source);
+      scoredByKey.set(key, (scoredByKey.get(key) ?? 0) + 1);
+      const pass = result.score >= SCORE_THRESHOLD;
+      console.info(
+        '[score] %s | %s @ %s — %d%s',
+        pass ? '✓' : '✗',
+        job.role.slice(0, 40),
+        job.company.slice(0, 25),
+        result.score,
+        pass ? '' : ` (${result.oneLineVerdict.slice(0, 60)})`
+      );
+      if (pass) {
+        return [{ ...job, ...result }];
+      }
+      return [];
+    });
+
+    if (toInsert.length > 0) {
+      const insertedCount = await insertScoredJobs(toInsert);
+      for (const job of toInsert) {
+        const key = displayKey(job.source);
+        insertedByKey.set(key, (insertedByKey.get(key) ?? 0) + 1);
+      }
+      console.info(
+        '[pipeline] Inserted %d jobs into jobs table',
+        insertedCount
+      );
+    }
+  }
+
+  await markSeen(freshJobs);
+
   const funnel = new Map<SourceKey, FunnelRow>();
   const allKeys = new Set([
     ...fetchedByKey.keys(),
     ...filteredByKey.keys(),
     ...freshByKey.keys(),
+    ...(hasToken ? scoredByKey.keys() : []),
+    ...(hasToken ? insertedByKey.keys() : []),
   ]);
   for (const key of allKeys) {
     funnel.set(key, {
       fetched: fetchedByKey.get(key) ?? 0,
       filtered: filteredByKey.get(key) ?? 0,
       fresh: freshByKey.get(key) ?? 0,
+      ...(hasToken
+        ? {
+            inserted: insertedByKey.get(key) ?? 0,
+            scored: scoredByKey.get(key) ?? 0,
+          }
+        : {}),
     });
   }
 
-  printFunnel(funnel, newCompanies);
+  printFunnel(funnel, newCompanies, hasToken);
 }
 
 await run();

@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 function findEnvFile(startDir: string): string | undefined {
@@ -17,7 +17,26 @@ function findEnvFile(startDir: string): string | undefined {
   return undefined;
 }
 
+function loadEnvFileOverride(filePath: string): void {
+  const lines = readFileSync(filePath, 'utf8').split('\n');
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+    const eq = line.indexOf('=');
+    if (eq === -1) {
+      continue;
+    }
+    const key = line.slice(0, eq).trim();
+    const val = line.slice(eq + 1).trim();
+    if (key) {
+      process.env[key] = val;
+    }
+  }
+}
+
 const envFile = findEnvFile(process.cwd());
 if (envFile) {
-  process.loadEnvFile(envFile);
+  loadEnvFileOverride(envFile);
 }
