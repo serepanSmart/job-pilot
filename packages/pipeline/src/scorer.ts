@@ -56,10 +56,15 @@ JSON schema (exact field names required):
   "one_line_verdict": <string max 120 chars, use hyphens not em-dashes>
 }
 
+CRITICAL: This candidate is a Frontend/React engineer ONLY.
+If the job is primarily DevOps, Backend, Mobile, Data, QA, or any non-frontend role,
+score it 0-20 regardless of any React/JS mentions in the description.
+The job title must indicate a Frontend, React, UI, or Full-stack web position.
+
 Scoring scale:
-- 80-100: Excellent fit - core skills present, EU/global remote, timezone OK
-- 65-79: Good fit - most skills match, minor gaps acceptable
-- 0-64: Poor fit - major skill gaps, location blockers, or hard constraints
+- 80-100: Excellent fit - core frontend skills present, EU/global remote, timezone OK
+- 65-79: Good fit - most frontend skills match, minor gaps acceptable
+- 0-64: Poor fit - wrong role type, major skill gaps, location blockers, or hard constraints
 
 timezone_fit values:
 - "good": EU or global remote, UTC+2 compatible, no strict overlap requirement
