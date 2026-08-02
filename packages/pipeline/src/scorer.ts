@@ -1,20 +1,20 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import type { PipelineJob, ScoreResult } from './types';
 
-const MODEL = 'claude-haiku-4-5-20251001';
+const MODEL = 'gemini-2.0-flash';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 3000;
+const GEMINI_URL =
+  'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const CV_PATH = path.resolve(DIR, '../../../data/cv-master.md');
 
 let cvCache: string | null = null;
-let clientCache: Anthropic | null = null;
-let cookieToken: string | null = null;
+let apiKey: string | null = null;
 
 function loadCv(): string {
   if (cvCache === null) {
@@ -23,74 +23,16 @@ function loadCv(): string {
   return cvCache;
 }
 
-function initClient(): void {
-  if (clientCache !== null) {
+function initApiKey(): void {
+  if (apiKey !== null) {
     return;
   }
-  const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
-  if (!token) {
-    throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
+  const key = process.env['GEMINI_API_KEY'];
+  if (!key) {
+    throw new Error('GEMINI_API_KEY is not set');
   }
-  const baseURL =
-    process.env['CODEMIE_BASE_URL'] ||
-    'https://codemie.lab.epam.com/code-assistant-api';
-
-  console.info('[scorer] token length=%d baseURL=%s', token.length, baseURL);
-
-  if (token.length > 50) {
-    cookieToken = token;
-    clientCache = new Anthropic({ apiKey: 'proxy-handled', baseURL });
-  } else {
-    clientCache = new Anthropic({ apiKey: token, baseURL });
-  }
-}
-
-async function callApi(
-  job: PipelineJob
-): Promise<{ content: { type: string; text: string }[] }> {
-  if (cookieToken !== null) {
-    const baseURL =
-      process.env['CODEMIE_BASE_URL'] ||
-      'https://codemie.lab.epam.com/code-assistant-api';
-    const resp = await fetch(`${baseURL}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        cookie: `_oauth2_proxy=${cookieToken}`,
-        'x-api-key': 'proxy-handled',
-      },
-      body: JSON.stringify({
-        max_tokens: 512,
-        messages: [{ content: buildUserMessage(job), role: 'user' }],
-        model: MODEL,
-        system: buildSystemPrompt(),
-      }),
-    });
-    if (!resp.ok) {
-      const body = await resp.text();
-      throw new Error(`${resp.status} ${body}`);
-    }
-    return resp.json() as Promise<{
-      content: { type: string; text: string }[];
-    }>;
-  }
-  if (clientCache === null) {
-    throw new Error('client not initialised');
-  }
-  const response = await clientCache.messages.create({
-    max_tokens: 512,
-    messages: [{ content: buildUserMessage(job), role: 'user' }],
-    model: MODEL,
-    system: buildSystemPrompt(),
-  });
-  return {
-    content: response.content.map((b) =>
-      b.type === 'text'
-        ? { type: 'text', text: b.text }
-        : { type: b.type, text: '' }
-    ),
-  };
+  apiKey = key;
+  console.info('[scorer] model=%s', MODEL);
 }
 
 const RawScoreSchema = z.object({
@@ -102,7 +44,7 @@ const RawScoreSchema = z.object({
   timezone_fit: z.enum(['bad', 'good', 'ok']).default('ok'),
 });
 
-const SYSTEM_PREFIX = `You score job postings against a candidate CV to determine fit.
+const SYSTEM_PROMPT = `You score job postings against a candidate CV to determine fit.
 Return ONLY a valid JSON object - no markdown, no explanation, no extra text.
 
 JSON schema (exact field names required):
@@ -128,13 +70,10 @@ timezone_fit values:
 Known gaps - NEVER score these as matched skills:
 GraphQL, Angular, Vue, Svelte, Node.js backend production experience,
 AWS beyond Essentials certification, Cypress/Playwright E2E testing.
-If the job requires any of these, list them in missing_keywords.
-
-Candidate CV:
-`;
+If the job requires any of these, list them in missing_keywords.`;
 
 function buildSystemPrompt(): string {
-  return SYSTEM_PREFIX + loadCv();
+  return SYSTEM_PROMPT + '\n\nCandidate CV:\n' + loadCv();
 }
 
 function buildUserMessage(job: PipelineJob): string {
@@ -147,22 +86,43 @@ Description (first ${MAX_DESC_CHARS} chars):
 ${job.description.slice(0, MAX_DESC_CHARS)}`;
 }
 
+async function callApi(job: PipelineJob): Promise<string> {
+  if (apiKey === null) {
+    throw new Error('apiKey not initialised');
+  }
+  const resp = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [
+        { content: buildSystemPrompt(), role: 'system' },
+        { content: buildUserMessage(job), role: 'user' },
+      ],
+      max_tokens: 512,
+      response_format: { type: 'json_object' },
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`${resp.status} ${body}`);
+  }
+
+  const data = (await resp.json()) as {
+    choices: { message: { content: string } }[];
+  };
+  return data.choices[0]?.message.content ?? '';
+}
+
 export async function scoreJob(job: PipelineJob): Promise<ScoreResult | null> {
   try {
-    initClient();
-    const response = await callApi(job);
-
-    const text = response.content
-      .filter((b) => b.type === 'text')
-      .map((b) => b.text)
-      .join('');
-
-    const cleaned = text
-      .replace(/^```json\s*\n?/, '')
-      .replace(/\n?```\s*$/, '')
-      .trim();
-
-    const raw = RawScoreSchema.parse(JSON.parse(cleaned));
+    initApiKey();
+    const text = await callApi(job);
+    const raw = RawScoreSchema.parse(JSON.parse(text));
 
     return {
       matchedKeywords: raw.matched_keywords,

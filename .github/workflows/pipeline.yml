@@ -26,8 +26,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          JOBPILOT_CODEMIE_TOKEN: ${{ secrets.JOBPILOT_CODEMIE_TOKEN }}
-          CODEMIE_BASE_URL: ${{ secrets.CODEMIE_BASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DIGEST_EMAIL_FROM: ${{ vars.DIGEST_EMAIL_FROM }}
           DIGEST_EMAIL_TO: ${{ secrets.DIGEST_EMAIL_TO }}
           DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}

@@ -149,11 +149,11 @@ function printFunnel(
 async function run(): Promise<void> {
   console.info('[pipeline] Starting...');
 
-  const hasToken = Boolean(process.env['JOBPILOT_CODEMIE_TOKEN']);
+  const hasToken = Boolean(process.env['GEMINI_API_KEY']);
 
   if (!hasToken) {
     console.warn(
-      '[pipeline] JOBPILOT_CODEMIE_TOKEN not set — scoring skipped, jobs will not be inserted'
+      '[pipeline] GEMINI_API_KEY not set — scoring skipped, jobs will not be inserted'
     );
   }
 
