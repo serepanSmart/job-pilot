@@ -45,7 +45,7 @@ const DraggableCard = ({ job }: { readonly job: Job }) => {
           : undefined,
       }}
     >
-      <CardContent dense>
+      <CardContent sx={{ p: 1.75, '&:last-child': { pb: 1.75 } }}>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <ScoreRing score={job.score} size={36} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -60,6 +60,15 @@ const DraggableCard = ({ job }: { readonly job: Job }) => {
               color="text.secondary"
             />
           </Box>
+          <Button
+            href={`/job/${job.id}`}
+            size="small"
+            variant="text"
+            sx={{ flexShrink: 0, fontSize: '0.7rem', px: 0.75, minWidth: 0 }}
+            onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+          >
+            Details
+          </Button>
         </Stack>
       </CardContent>
     </Card>
