@@ -29,7 +29,14 @@ const loadEnvFileOverride = (filePath: string): void => {
       continue;
     }
     const key = line.slice(0, eq).trim();
-    const val = line.slice(eq + 1).trim();
+    let val = line.slice(eq + 1).trim();
+    if (
+      val.length >= 2 &&
+      ((val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'")))
+    ) {
+      val = val.slice(1, -1);
+    }
     if (key) {
       process.env[key] = val;
     }

@@ -18,6 +18,7 @@
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "npm run test --workspace @jobpilot/pipeline",
     "pipeline": "npm run start --workspace @jobpilot/pipeline",
     "prepare": "husky"
   },

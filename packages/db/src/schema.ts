@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   index,
   integer,
@@ -66,6 +67,9 @@ export const jobs = pgTable(
     uniqueIndex('jobs_url_unique').on(table.url),
     uniqueIndex('jobs_content_hash_unique').on(table.contentHash),
     index('jobs_status_score_idx').on(table.status, table.score),
+    index('jobs_date_applied_idx')
+      .on(table.dateApplied)
+      .where(sql`date_applied IS NOT NULL`),
   ]
 );
 

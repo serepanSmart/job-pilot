@@ -1,5 +1,12 @@
 const RESEND_API = 'https://api.resend.com/emails';
 
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
 interface DigestJob {
   company: string;
   id: string;
@@ -27,10 +34,10 @@ const buildHtml = (jobs: DigestJob[], dashboardUrl: string): string => {
           <span style="font-size:20px;font-weight:700;color:${scoreColor(j.score ?? 0)}">${j.score ?? '-'}</span>
         </td>
         <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6">
-          <a href="${dashboardUrl}/job/${j.id}" style="color:#8B5CF6;text-decoration:none;font-weight:600;font-size:14px">${j.role}</a>
-          <div style="color:#6b7280;font-size:12px;margin-top:2px">${j.company}</div>
+          <a href="${dashboardUrl}/job/${j.id}" style="color:#8B5CF6;text-decoration:none;font-weight:600;font-size:14px">${escapeHtml(j.role)}</a>
+          <div style="color:#6b7280;font-size:12px;margin-top:2px">${escapeHtml(j.company)}</div>
         </td>
-        <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;color:#374151;font-size:13px">${j.verdict ?? ''}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #f3f4f6;color:#374151;font-size:13px">${escapeHtml(j.verdict ?? '')}</td>
       </tr>`
     )
     .join('');

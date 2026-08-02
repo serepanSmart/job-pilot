@@ -6,7 +6,7 @@ import {
   type Job,
   type JobStatus,
 } from '@jobpilot/db';
-import { desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 
 export const getInboxJobs = async (): Promise<Job[]> => {
   return getDb()
@@ -47,27 +47,23 @@ export interface Stats {
   readonly weekly: readonly WeeklyApplications[];
 }
 
-const mondayOf = (date: Date): string => {
-  const copy = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  );
-  const offset = (copy.getUTCDay() + 6) % 7;
-  copy.setUTCDate(copy.getUTCDate() - offset);
-  return copy.toISOString().slice(0, 10);
-};
-
 export const getStats = async (): Promise<Stats> => {
   const db = getDb();
 
-  const [statusRows, appliedRows] = await Promise.all([
+  const [statusRows, weeklyRows] = await Promise.all([
     db
       .select({ count: sql<number>`count(*)::int`, status: jobs.status })
       .from(jobs)
       .groupBy(jobs.status),
     db
-      .select({ dateApplied: jobs.dateApplied })
+      .select({
+        count: sql<number>`count(*)::int`,
+        weekStart: sql<string>`to_char(date_trunc('week', date_applied), 'YYYY-MM-DD')`,
+      })
       .from(jobs)
-      .where(isNotNull(jobs.dateApplied)),
+      .where(sql`date_applied IS NOT NULL`)
+      .groupBy(sql`date_trunc('week', date_applied)`)
+      .orderBy(sql`date_trunc('week', date_applied)`),
   ]);
 
   const counts = Object.fromEntries(
@@ -106,18 +102,10 @@ export const getStats = async (): Promise<Stats> => {
     return { count, stage };
   });
 
-  const buckets = new Map<string, number>();
-  for (const row of appliedRows) {
-    if (row.dateApplied === null) {
-      continue;
-    }
-    const week = mondayOf(row.dateApplied);
-    buckets.set(week, (buckets.get(week) ?? 0) + 1);
-  }
-
-  const weekly = [...buckets.entries()]
-    .map(([weekStart, count]) => ({ count, weekStart }))
-    .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+  const weekly = weeklyRows.map((row) => ({
+    count: row.count,
+    weekStart: row.weekStart,
+  }));
 
   return { counts, funnel, total, weekly };
 };

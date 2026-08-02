@@ -9,6 +9,21 @@ import {
   isPasswordCorrect,
 } from '@/lib/session';
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_ATTEMPTS = 10;
+
+const attempts: { count: number; resetAt: number } = { count: 0, resetAt: 0 };
+
+const isRateLimited = (): boolean => {
+  const now = Date.now();
+  if (now > attempts.resetAt) {
+    attempts.count = 0;
+    attempts.resetAt = now + RATE_LIMIT_WINDOW_MS;
+  }
+  attempts.count += 1;
+  return attempts.count > MAX_ATTEMPTS;
+};
+
 export interface LoginState {
   readonly error?: string;
 }
@@ -17,6 +32,10 @@ export const login = async (
   _previous: LoginState,
   formData: FormData
 ): Promise<LoginState> => {
+  if (isRateLimited()) {
+    return { error: 'Too many login attempts. Try again in a minute.' };
+  }
+
   const password = formData.get('password');
   const next = formData.get('next');
 

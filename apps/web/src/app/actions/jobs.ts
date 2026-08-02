@@ -3,7 +3,15 @@
 import { JOB_STATUSES, getDb, jobs } from '@jobpilot/db';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { SESSION_COOKIE, isSessionTokenValid } from '@/lib/session';
+
+const requireAuth = async (): Promise<boolean> => {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  return isSessionTokenValid(token);
+};
 
 const statusInput = z.object({
   id: z.string().uuid(),
@@ -19,6 +27,10 @@ export const setJobStatus = async (
   id: string,
   status: string
 ): Promise<{ readonly error?: string; readonly ok: boolean }> => {
+  if (!(await requireAuth())) {
+    return { error: 'Unauthorized.', ok: false };
+  }
+
   const parsed = statusInput.safeParse({ id, status });
   if (!parsed.success) {
     return { error: 'Invalid status update.', ok: false };
@@ -51,6 +63,10 @@ export const setJobNotes = async (
   id: string,
   notes: string
 ): Promise<{ readonly error?: string; readonly ok: boolean }> => {
+  if (!(await requireAuth())) {
+    return { error: 'Unauthorized.', ok: false };
+  }
+
   const parsed = notesInput.safeParse({ id, notes });
   if (!parsed.success) {
     return { error: 'Notes are too long.', ok: false };

@@ -13,13 +13,39 @@ if (existsSync(rootEnv)) {
 }
 
 const nextConfig: NextConfig = {
-  // @jobpilot/db is consumed as TypeScript source (no build step).
   transpilePackages: ['@jobpilot/db'],
 
-  // Pin the workspace root. Without this, Next walks up past the repo and can
-  // latch onto an unrelated lockfile in the user's home directory.
   turbopack: {
     root: workspaceRoot,
+  },
+
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data:",
+              "font-src 'self'",
+              "connect-src 'self'",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
   },
 };
 
