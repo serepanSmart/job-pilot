@@ -16,6 +16,7 @@ import Chip from '@mui/material/Chip';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
 import { useOptimistic, useState, useTransition } from 'react';
 import { setJobStatus } from '@/app/actions/jobs';
 import { tokens } from '@/theme/tokens';
@@ -156,6 +157,25 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
       applyOptimistic({ id: job.id, to: from });
       await setJobStatus(job.id, from);
     });
+  }
+
+  if (!jobs.length) {
+    return (
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={1}>
+            <Typography variant="h6">Pipeline is empty</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Shortlist jobs from the{' '}
+              <Link href="/" style={{ color: 'inherit' }}>
+                Inbox
+              </Link>{' '}
+              to move them into the pipeline.
+            </Typography>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

@@ -87,6 +87,17 @@ export const theme = createTheme({
           outline: `2px solid ${tokens.primary.light}`,
           outlineOffset: 2,
         },
+        kbd: {
+          display: 'inline-block',
+          padding: '1px 5px',
+          borderRadius: 4,
+          fontSize: '0.75em',
+          fontFamily: 'ui-monospace, monospace',
+          color: tokens.text.secondary,
+          background: tokens.surface.elevated,
+          border: `1px solid ${tokens.border.hover}`,
+          lineHeight: 1.5,
+        },
       },
     },
 

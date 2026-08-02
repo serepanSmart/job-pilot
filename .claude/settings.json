@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck)",
+      "Bash(npm run typecheck --workspace *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint --workspace *)",
+      "Bash(npm run lint:fix)",
+      "Bash(npm run format:check)",
+      "Bash(npm run build)",
+      "Bash(npm run build --workspace *)",
+      "Bash(npm run pipeline)",
+      "Bash(npm run dev)",
+      "Bash(npm run format)",
+      "Bash(codemie profile status)",
+      "Bash(codemie profile status *)"
+    ]
+  }
+}

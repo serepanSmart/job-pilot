@@ -5,6 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import {
   FunnelChart,
   WeeklyApplicationsChart,
@@ -17,6 +18,31 @@ export const dynamic = 'force-dynamic';
 
 export default async function StatsPage() {
   const stats = await getStats();
+
+  if (!stats.total) {
+    return (
+      <PageContainer>
+        <Stack spacing={3}>
+          <Typography variant="h5">Stats</Typography>
+          <Card variant="outlined">
+            <CardContent>
+              <Stack spacing={1}>
+                <Typography variant="h6">No data yet</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Stats will appear once the pipeline has discovered and scored
+                  some jobs. Run{' '}
+                  <Link href="/" style={{ color: 'inherit' }}>
+                    /find-jobs
+                  </Link>{' '}
+                  or wait for the next scheduled run.
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Stack>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
