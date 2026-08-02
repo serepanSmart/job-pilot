@@ -249,14 +249,26 @@ const run = async (): Promise<void> => {
   }[] = [];
   let jobsToMarkSeen = freshJobs;
 
-  if (hasToken && freshJobs.length > 0) {
-    console.info('[pipeline] Scoring %d fresh jobs...', freshJobs.length);
+  const SCORE_CAP = 50;
+  const jobsToScore = freshJobs.slice(0, SCORE_CAP);
 
-    const scoreResults = await scoreBatch(freshJobs);
+  if (freshJobs.length > SCORE_CAP) {
+    console.info(
+      '[pipeline] Capped scoring at %d/%d — %d deferred to next run',
+      SCORE_CAP,
+      freshJobs.length,
+      freshJobs.length - SCORE_CAP
+    );
+  }
 
-    jobsToMarkSeen = freshJobs.filter((_, i) => scoreResults[i] !== null);
+  if (hasToken && jobsToScore.length > 0) {
+    console.info('[pipeline] Scoring %d fresh jobs...', jobsToScore.length);
 
-    const toInsert = freshJobs.flatMap((job, i) => {
+    const scoreResults = await scoreBatch(jobsToScore);
+
+    jobsToMarkSeen = jobsToScore.filter((_, i) => scoreResults[i] !== null);
+
+    const toInsert = jobsToScore.flatMap((job, i) => {
       const result = scoreResults[i];
       if (result === null || result === undefined) {
         return [];

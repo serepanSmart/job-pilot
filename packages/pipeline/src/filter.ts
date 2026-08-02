@@ -1,7 +1,13 @@
 import type { PipelineJob } from './types';
 
 const TITLE_RE =
-  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack|software engineer|software developer|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer/i;
+  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack/i;
+
+const GENERIC_TITLE_RE =
+  /software engineer|software developer|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer/i;
+
+const FRONTEND_IN_DESC_RE =
+  /\breact\b|\bfrontend\b|\bfront-end\b|\bfront end\b/i;
 
 const REJECT_MOBILE_RE = /\breact native\b/i;
 
@@ -19,7 +25,13 @@ export const passesTitleFilter = (job: PipelineJob): boolean => {
   if (REJECT_MOBILE_RE.test(job.role)) {
     return false;
   }
-  return TITLE_RE.test(job.role);
+  if (TITLE_RE.test(job.role)) {
+    return true;
+  }
+  if (GENERIC_TITLE_RE.test(job.role)) {
+    return FRONTEND_IN_DESC_RE.test(job.description);
+  }
+  return false;
 };
 
 export const passesLocationFilter = (job: PipelineJob): boolean => {
