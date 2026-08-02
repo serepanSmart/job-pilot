@@ -7,6 +7,7 @@ import type { PipelineJob, ScoreResult } from './types';
 const MODEL = 'llama-3.1-8b-instant';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 3000;
+const MAX_CV_CHARS = 4000;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -72,7 +73,9 @@ AWS beyond Essentials certification, Cypress/Playwright E2E testing.
 If the job requires any of these, list them in missing_keywords.`;
 
 const buildSystemPrompt = (): string => {
-  return SYSTEM_PROMPT + '\n\nCandidate CV:\n' + loadCv();
+  return (
+    SYSTEM_PROMPT + '\n\nCandidate CV:\n' + loadCv().slice(0, MAX_CV_CHARS)
+  );
 };
 
 const buildUserMessage = (job: PipelineJob): string => {
