@@ -15,11 +15,3 @@ export const stripHtml = (html: string): string => {
     .replace(/\s+/g, ' ')
     .trim();
 };
-
-export const searchText = (job: {
-  description: string;
-  locationPolicy: string | null;
-  role: string;
-}): string => {
-  return `${job.role} ${job.description} ${job.locationPolicy ?? ''}`.toLowerCase();
-};

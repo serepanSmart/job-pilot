@@ -1,6 +1,7 @@
 'use server';
 
 import { JOB_STATUSES, getDb, jobs } from '@jobpilot/db';
+import type { NewJob } from '@jobpilot/db';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
@@ -37,7 +38,7 @@ export const setJobStatus = async (
   }
 
   const now = new Date();
-  const patch: Record<string, unknown> = {
+  const patch: Partial<NewJob> = {
     status: parsed.data.status,
     updatedAt: now,
   };

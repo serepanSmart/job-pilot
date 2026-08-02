@@ -27,7 +27,6 @@ export const insertScoredJobs = async (
     timezoneFit: j.timezoneFit,
     url: j.url,
     verdict: j.oneLineVerdict,
-    ...(j.postedAt !== null ? { dateFound: j.postedAt } : {}),
   }));
 
   return db.insert(jobs).values(toInsert).onConflictDoNothing().returning();

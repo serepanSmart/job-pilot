@@ -8,6 +8,8 @@ import {
 } from 'docx';
 import { writeFileSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { z } from 'zod';
 
 export interface CvRole {
   bullets: string[];
@@ -41,6 +43,45 @@ export interface CvData {
   technologies: Record<string, string>;
   workMode: string;
 }
+
+const CvRoleSchema = z.object({
+  bullets: z.array(z.string()),
+  period: z.string(),
+  tech: z.string(),
+  title: z.string(),
+});
+
+const CvExperienceSchema = z.object({
+  company: z.string(),
+  companyLocation: z.string(),
+  companyPeriod: z.string(),
+  roles: z.array(CvRoleSchema),
+});
+
+const CvDataSchema = z.object({
+  certifications: z.array(z.string()),
+  coreCompetencies: z.array(z.string()),
+  education: z.array(
+    z.object({
+      degree: z.string(),
+      institution: z.string(),
+      period: z.string(),
+    })
+  ),
+  email: z.string(),
+  experience: z.array(CvExperienceSchema),
+  github: z.string(),
+  languages: z.array(z.object({ language: z.string(), level: z.string() })),
+  linkedin: z.string(),
+  location: z.string(),
+  name: z.string(),
+  phone: z.string(),
+  portfolio: z.string(),
+  summary: z.string(),
+  targetTitle: z.string(),
+  technologies: z.record(z.string(), z.string()),
+  workMode: z.string(),
+});
 
 const FONT = 'Calibri';
 const SIZE_BODY = 22;
@@ -210,11 +251,20 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  const cv = JSON.parse(readFileSync(jsonPath, 'utf8')) as CvData;
+  const cv: CvData = CvDataSchema.parse(
+    JSON.parse(readFileSync(jsonPath, 'utf8'))
+  );
   const doc = buildDocument(cv);
   const buffer = await Packer.toBuffer(doc);
   writeFileSync(path.resolve(outPath), buffer);
   console.log(`Written: ${outPath}`);
 };
 
-await main();
+const __filename = fileURLToPath(import.meta.url);
+if (
+  process.argv[1] === __filename ||
+  process.argv[1]?.endsWith('/docx-gen.ts') ||
+  process.argv[1]?.endsWith('/docx-gen.js')
+) {
+  await main();
+}

@@ -47,7 +47,11 @@ export const autoGrow = async (
     slug,
   }));
 
-  await db.insert(companies).values(rows).onConflictDoNothing();
+  const inserted = await db
+    .insert(companies)
+    .values(rows)
+    .onConflictDoNothing()
+    .returning();
 
-  return candidates.size;
+  return inserted.length;
 };

@@ -16,6 +16,7 @@ export const JobNotes = ({
 }) => {
   const [notes, setNotes] = useState(initialNotes);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const dirty = notes !== initialNotes;
@@ -24,6 +25,7 @@ export const JobNotes = ({
     startTransition(async () => {
       const result = await setJobNotes(jobId, notes);
       setSaved(result.ok);
+      setSaveError(!result.ok);
     });
   };
 
@@ -35,6 +37,7 @@ export const JobNotes = ({
         onChange={(event) => {
           setNotes(event.target.value);
           setSaved(false);
+          setSaveError(false);
         }}
         multiline
         minRows={3}
@@ -53,6 +56,11 @@ export const JobNotes = ({
         {saved && !dirty ? (
           <Typography variant="caption" color="success.main">
             Saved
+          </Typography>
+        ) : null}
+        {saveError ? (
+          <Typography variant="caption" color="error.main">
+            Save failed - try again
           </Typography>
         ) : null}
       </Stack>

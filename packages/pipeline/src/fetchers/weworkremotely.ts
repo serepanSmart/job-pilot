@@ -7,7 +7,6 @@ import { stripHtml } from '../utils';
 const parser = new XMLParser({
   ignoreAttributes: false,
   parseTagValue: false,
-  processEntities: false,
   trimValues: true,
 });
 

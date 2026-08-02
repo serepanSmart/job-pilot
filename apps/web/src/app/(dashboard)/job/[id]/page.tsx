@@ -16,8 +16,20 @@ import { formatDate, formatSource } from '@/lib/format';
 import { PageContainer } from '@/components/page-container';
 import { getJob } from '@/lib/jobs';
 
-export const metadata: Metadata = { title: 'Job · JobPilot' };
 export const dynamic = 'force-dynamic';
+
+export const generateMetadata = async ({
+  params,
+}: {
+  readonly params: Promise<{ id: string }>;
+}): Promise<Metadata> => {
+  const { id } = await params;
+  const job = await getJob(id);
+  if (!job) {
+    return { title: 'Job not found · JobPilot' };
+  }
+  return { title: `${job.role} at ${job.company} · JobPilot` };
+};
 
 export default async function JobPage({
   params,

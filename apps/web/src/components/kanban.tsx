@@ -17,7 +17,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useOptimistic, useState, useTransition } from 'react';
+import { useCallback, useOptimistic, useState, useTransition } from 'react';
 import { setJobStatus } from '@/app/actions/jobs';
 import { tokens } from '@/theme/tokens';
 import { ScoreRing } from './score-ring';
@@ -45,7 +45,7 @@ const DraggableCard = ({ job }: { readonly job: Job }) => {
           : undefined,
       }}
     >
-      <CardContent sx={{ p: 1.75, '&:last-child': { pb: 1.75 } }}>
+      <CardContent dense>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <ScoreRing score={job.score} size={36} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -127,24 +127,27 @@ export const Kanban = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
   const [moved, setMoved] = useState<Move | null>(null);
   const [, startTransition] = useTransition();
 
-  const onDragEnd = (event: DragEndEvent) => {
-    const target = event.over?.id;
-    if (typeof target !== 'string' || !isPipelineStatus(target)) {
-      return;
-    }
+  const onDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const target = event.over?.id;
+      if (typeof target !== 'string' || !isPipelineStatus(target)) {
+        return;
+      }
 
-    const job = jobs.find((item) => item.id === event.active.id);
-    if (!job || job.status === target) {
-      return;
-    }
+      const job = jobs.find((item) => item.id === event.active.id);
+      if (!job || job.status === target) {
+        return;
+      }
 
-    setMoved({ from: job.status, job, to: target });
+      setMoved({ from: job.status, job, to: target });
 
-    startTransition(async () => {
-      applyOptimistic({ id: job.id, to: target });
-      await setJobStatus(job.id, target);
-    });
-  };
+      startTransition(async () => {
+        applyOptimistic({ id: job.id, to: target });
+        await setJobStatus(job.id, target);
+      });
+    },
+    [jobs, applyOptimistic, startTransition]
+  );
 
   const undo = () => {
     if (!moved) {

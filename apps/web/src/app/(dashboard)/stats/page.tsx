@@ -69,7 +69,7 @@ export default async function StatsPage() {
         >
           {JOB_STATUSES.map((status) => (
             <Card key={status} variant="outlined">
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+              <CardContent compact>
                 <Typography
                   variant="h5"
                   sx={{ fontFamily: 'var(--font-sora)' }}

@@ -6,10 +6,11 @@ import Typography from '@mui/material/Typography';
 import { PageContainer } from '@/components/page-container';
 
 interface ErrorProps {
+  error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function DashboardError({ reset }: ErrorProps) {
+export default function DashboardError({ error, reset }: ErrorProps) {
   return (
     <PageContainer>
       <Box
@@ -26,8 +27,14 @@ export default function DashboardError({ reset }: ErrorProps) {
           Something went wrong
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          An unexpected error occurred while loading this page.
+          {error.message ||
+            'An unexpected error occurred while loading this page.'}
         </Typography>
+        {error.digest && (
+          <Typography variant="caption" color="text.disabled">
+            digest: {error.digest}
+          </Typography>
+        )}
         <Button variant="contained" onClick={reset} sx={{ mt: 2 }}>
           Try again
         </Button>

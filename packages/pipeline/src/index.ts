@@ -29,6 +29,18 @@ type SourceKey =
   | 'lever'
   | 'ashby';
 
+const SOURCE_KEYS: readonly SourceKey[] = [
+  'remotive',
+  'remoteok',
+  'arbeitnow',
+  'weworkremotely',
+  'hn-algolia',
+  'dou',
+  'greenhouse',
+  'lever',
+  'ashby',
+];
+
 interface FunnelRow {
   fetched: number;
   filtered: number;
@@ -47,7 +59,11 @@ const displayKey = (source: string): SourceKey => {
   if (source.startsWith('ashby:')) {
     return 'ashby';
   }
-  return source as SourceKey;
+  const key = SOURCE_KEYS.find((k) => k === source);
+  if (!key) {
+    throw new Error(`Unknown source key: ${source}`);
+  }
+  return key;
 };
 
 const isAggregator = (source: string): boolean => {
@@ -159,6 +175,7 @@ const run = async (): Promise<void> => {
 
   const controller = new AbortController();
   const { signal } = controller;
+  const fetchTimeout = setTimeout(() => controller.abort(), 60_000);
 
   const [
     remotiveJobs,
@@ -181,6 +198,8 @@ const run = async (): Promise<void> => {
     fetchLever(signal),
     fetchAshby(signal),
   ]);
+
+  clearTimeout(fetchTimeout);
 
   const allFetched: PipelineJob[] = [
     ...remotiveJobs,

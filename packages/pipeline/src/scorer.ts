@@ -131,9 +131,12 @@ const callApi = async (job: PipelineJob): Promise<string> => {
       throw new Error(`${resp.status} ${body}`);
     }
 
-    const data = (await resp.json()) as {
-      choices: { message: { content: string } }[];
-    };
+    const GroqResponseSchema = z.object({
+      choices: z.array(
+        z.object({ message: z.object({ content: z.string() }) })
+      ),
+    });
+    const data = GroqResponseSchema.parse(await resp.json());
     return data.choices[0]?.message.content ?? '';
   }
 
@@ -171,6 +174,8 @@ export const scoreBatch = async (
   if (!jobs.length) {
     return [];
   }
+
+  loadCv();
 
   const results: (ScoreResult | null)[] = [];
 

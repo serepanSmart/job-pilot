@@ -144,6 +144,16 @@ export const theme = createTheme({
           '&:last-child': { paddingBottom: 22 },
         },
       },
+      variants: [
+        {
+          props: { compact: true },
+          style: { padding: '16px', '&:last-child': { paddingBottom: '16px' } },
+        },
+        {
+          props: { dense: true },
+          style: { padding: '14px', '&:last-child': { paddingBottom: '14px' } },
+        },
+      ],
     },
 
     MuiAppBar: {

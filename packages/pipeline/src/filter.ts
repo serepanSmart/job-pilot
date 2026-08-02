@@ -13,7 +13,7 @@ const REJECT_LOCATION_RE =
 const REJECT_DOU_RE = /офіс|офісна|в офіс/i;
 
 const JUNIOR_RE =
-  /\bjunior\b|\bjr\.\s|\bintern(ship)?\b|entry[\s-]level|graduate program/i;
+  /\bjunior\b|\bjr\.?\b|\bintern(ship)?\b|entry[\s-]level|graduate program/i;
 
 const MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
 

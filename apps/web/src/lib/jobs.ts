@@ -7,6 +7,7 @@ import {
   type JobStatus,
 } from '@jobpilot/db';
 import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { cache } from 'react';
 
 export const getInboxJobs = async (): Promise<Job[]> => {
   return getDb()
@@ -16,14 +17,14 @@ export const getInboxJobs = async (): Promise<Job[]> => {
     .orderBy(desc(jobs.score), desc(jobs.dateFound));
 };
 
-export const getJob = async (id: string): Promise<Job | undefined> => {
+export const getJob = cache(async (id: string): Promise<Job | undefined> => {
   const rows = await getDb()
     .select()
     .from(jobs)
     .where(eq(jobs.id, id))
     .limit(1);
   return rows[0];
-};
+});
 
 export const getPipelineJobs = async (): Promise<Job[]> => {
   return getDb()
@@ -88,17 +89,12 @@ export const getStats = async (): Promise<Stats> => {
     total += row.count;
   }
 
-  const stageOrder: readonly JobStatus[] = [
-    'applied',
-    'screening',
-    'interview',
-    'offer',
-  ];
   const funnel = FUNNEL_STAGES.map((stage) => {
-    const fromIndex = stageOrder.indexOf(stage);
-    const count = stageOrder
-      .slice(fromIndex)
-      .reduce((sum, later) => sum + counts[later], 0);
+    const fromIndex = FUNNEL_STAGES.indexOf(stage);
+    const count = FUNNEL_STAGES.slice(fromIndex).reduce(
+      (sum, later) => sum + counts[later],
+      0
+    );
     return { count, stage };
   });
 

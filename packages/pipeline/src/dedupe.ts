@@ -18,7 +18,11 @@ export const filterUnseen = async (
   }
 
   const db = getDb();
-  const hashes = jobs.map((j) => contentHash(j.company, j.role));
+  const jobsWithHashes = jobs.map((j) => ({
+    hash: contentHash(j.company, j.role),
+    job: j,
+  }));
+  const hashes = jobsWithHashes.map((jh) => jh.hash);
 
   const seen = new Set<string>();
   for (let i = 0; i < hashes.length; i += BATCH) {
@@ -30,7 +34,7 @@ export const filterUnseen = async (
     rows.forEach((r) => seen.add(r.hash));
   }
 
-  return jobs.filter((j) => !seen.has(contentHash(j.company, j.role)));
+  return jobsWithHashes.filter((jh) => !seen.has(jh.hash)).map((jh) => jh.job);
 };
 
 export const markSeen = async (jobs: PipelineJob[]): Promise<void> => {

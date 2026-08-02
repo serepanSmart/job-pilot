@@ -23,7 +23,10 @@ export const JobStatusSelect = ({
       value={status}
       disabled={pending}
       onChange={(event) => {
-        const next = event.target.value as JobStatus;
+        const next = JOB_STATUSES.find((s) => s === event.target.value);
+        if (!next) {
+          return;
+        }
         setStatus(next);
         startTransition(async () => {
           await setJobStatus(jobId, next);

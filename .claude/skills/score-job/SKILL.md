@@ -41,7 +41,7 @@ The user provides either:
    console.log(JSON.stringify(result, null, 2));
    EOF
    ```
-   Fill in the actual values. `JOBPILOT_CODEMIE_TOKEN` must be set (see RUNNING.md).
+   Fill in the actual values. `GROQ_API_KEY` must be set (see `.env`).
 
 5. **Report score.** Show the user: score, verdict, matched keywords, missing keywords, red flags, timezone fit.
 

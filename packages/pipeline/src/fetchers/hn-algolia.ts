@@ -49,9 +49,11 @@ const parseComment = (
   }
 
   const roleCandidate =
-    parts.slice(1).find((p) => ROLE_RE.test(p)) ??
-    parts[1] ??
-    'Frontend Engineer';
+    parts.slice(1).find((p) => ROLE_RE.test(p)) ?? parts[1] ?? null;
+
+  if (!roleCandidate) {
+    return null;
+  }
 
   const url = `https://news.ycombinator.com/item?id=${comment.objectID}`;
   const descText = text.slice(0, 1500);

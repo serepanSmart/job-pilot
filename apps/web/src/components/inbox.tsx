@@ -75,7 +75,7 @@ export const Inbox = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
         await setJobStatus(job.id, to);
       });
     },
-    [jobs, applyOptimistic, startTransition]
+    [jobs, applyOptimistic]
   );
 
   const undo = useCallback(() => {

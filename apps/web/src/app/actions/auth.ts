@@ -9,20 +9,11 @@ import {
   isPasswordCorrect,
 } from '@/lib/session';
 
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_ATTEMPTS = 10;
-
-const attempts: { count: number; resetAt: number } = { count: 0, resetAt: 0 };
-
-const isRateLimited = (): boolean => {
-  const now = Date.now();
-  if (now > attempts.resetAt) {
-    attempts.count = 0;
-    attempts.resetAt = now + RATE_LIMIT_WINDOW_MS;
-  }
-  attempts.count += 1;
-  return attempts.count > MAX_ATTEMPTS;
-};
+const RL_UNTIL_COOKIE = 'rl_until';
+const RL_DELAY_COOKIE = 'rl_delay';
+const INITIAL_DELAY_MS = 2_000;
+const MAX_DELAY_MS = 3_600_000;
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 export interface LoginState {
   readonly error?: string;
@@ -32,8 +23,12 @@ export const login = async (
   _previous: LoginState,
   formData: FormData
 ): Promise<LoginState> => {
-  if (isRateLimited()) {
-    return { error: 'Too many login attempts. Try again in a minute.' };
+  const store = await cookies();
+
+  const blockedUntil = Number(store.get(RL_UNTIL_COOKIE)?.value ?? 0);
+  if (Date.now() < blockedUntil) {
+    const secsLeft = Math.ceil((blockedUntil - Date.now()) / 1000);
+    return { error: `Too many attempts. Try again in ${secsLeft}s.` };
   }
 
   const password = formData.get('password');
@@ -44,16 +39,38 @@ export const login = async (
   }
 
   if (!isPasswordCorrect(password)) {
+    const prevDelay = Number(store.get(RL_DELAY_COOKIE)?.value ?? 0);
+    const delay = Math.min(
+      prevDelay > 0 ? prevDelay * 2 : INITIAL_DELAY_MS,
+      MAX_DELAY_MS
+    );
+    const maxAgeSec = Math.ceil(delay / 1000) + 60;
+    store.set(RL_UNTIL_COOKIE, String(Date.now() + delay), {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: IS_PROD,
+      maxAge: maxAgeSec,
+    });
+    store.set(RL_DELAY_COOKIE, String(delay), {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: IS_PROD,
+      maxAge: maxAgeSec,
+    });
     return { error: 'Incorrect password.' };
   }
 
-  const store = await cookies();
+  store.delete(RL_UNTIL_COOKIE);
+  store.delete(RL_DELAY_COOKIE);
+
   store.set(SESSION_COOKIE, await createSessionToken(), {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: '/',
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: IS_PROD,
   });
 
   const target =
