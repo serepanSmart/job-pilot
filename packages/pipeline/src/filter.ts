@@ -12,14 +12,14 @@ const FRONTEND_IN_DESC_RE =
 const REJECT_MOBILE_RE = /\breact native\b/i;
 
 const REJECT_LOCATION_RE =
-  /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required|\brelocation\b/i;
+  /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required|requires relocation|relocation to\b|must relocate/i;
 
 const REJECT_DOU_RE = /офіс|офісна|в офіс/i;
 
 const JUNIOR_RE =
   /\bjunior\b|\bjr\.?\b|\bintern(ship)?\b|entry[\s-]level|graduate program/i;
 
-const MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
+const MAX_AGE_MS = 35 * 24 * 60 * 60 * 1000;
 
 export const passesTitleFilter = (job: PipelineJob): boolean => {
   if (REJECT_MOBILE_RE.test(job.role)) {

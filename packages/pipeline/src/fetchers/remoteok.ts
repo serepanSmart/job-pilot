@@ -12,6 +12,7 @@ const RawJobSchema = z.object({
   position: z.string(),
   salary_max: z.number().nullable().optional(),
   salary_min: z.number().nullable().optional(),
+  tags: z.array(z.string()).optional().default([]),
   url: z.string().optional(),
 });
 
@@ -49,12 +50,13 @@ export const fetchRemoteOK = async (
         salaryInfo = `$${j.salary_min.toLocaleString()}+`;
       }
 
+      const tagStr = j.tags.length ? ' ' + j.tags.join(' ') : '';
       const r = PipelineJobSchema.safeParse({
         company: j.company,
-        description: stripHtml(j.description ?? ''),
+        description: stripHtml(j.description ?? '') + tagStr,
         locationPolicy: j.location ?? null,
         postedAt: j.epoch ? new Date(j.epoch * 1000) : null,
-        role: j.position,
+        role: j.position + tagStr,
         salaryInfo,
         source: 'remoteok',
         url: jobUrl,
