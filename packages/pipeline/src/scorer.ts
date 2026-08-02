@@ -57,9 +57,11 @@ JSON schema (exact field names required):
 }
 
 CRITICAL: This candidate is a Frontend/React engineer ONLY.
-If the job is primarily DevOps, Backend, Mobile, Data, QA, or any non-frontend role,
+If the job is primarily DevOps, Backend, Mobile, Data, ML/AI infrastructure, MLOps, QA, or any non-frontend role,
 score it 0-20 regardless of any React/JS mentions in the description.
-The job title must indicate a Frontend, React, UI, or Full-stack web position.
+The job title must indicate a Frontend, React, UI, Full-stack web, or AI-native product engineering position.
+An "AI Engineer" building user-facing AI products with React/TypeScript is a GOOD fit (score normally).
+An "AI Engineer" training models, managing ML pipelines, or doing MLOps is NOT a fit (score 0-20).
 
 Scoring scale:
 - 80-100: Excellent fit - core frontend skills present, EU/global remote, timezone OK

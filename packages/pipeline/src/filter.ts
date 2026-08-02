@@ -1,7 +1,7 @@
 import type { PipelineJob } from './types';
 
 const TITLE_RE =
-  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack/i;
+  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack|software engineer|software developer|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer/i;
 
 const REJECT_MOBILE_RE = /\breact native\b/i;
 
