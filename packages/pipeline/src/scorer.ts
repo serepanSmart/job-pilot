@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import type { PipelineJob, ScoreResult } from './types';
 
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL = 'llama-3.1-8b-instant';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 3000;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -85,37 +85,59 @@ Description (first ${MAX_DESC_CHARS} chars):
 ${job.description.slice(0, MAX_DESC_CHARS)}`;
 }
 
+function parseRetryAfterMs(body: string): number {
+  const match = /try again in ([\d.]+)s/i.exec(body);
+  return match ? Math.ceil(parseFloat(match[1]) * 1000) + 500 : 20000;
+}
+
 async function callApi(job: PipelineJob): Promise<string> {
   if (apiKey === null) {
     throw new Error('apiKey not initialised');
   }
-  const resp = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        { content: buildSystemPrompt(), role: 'system' },
-        { content: buildUserMessage(job), role: 'user' },
-      ],
-      max_tokens: 512,
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
-    }),
+  const payload = JSON.stringify({
+    model: MODEL,
+    messages: [
+      { content: buildSystemPrompt(), role: 'system' },
+      { content: buildUserMessage(job), role: 'user' },
+    ],
+    max_tokens: 512,
+    response_format: { type: 'json_object' },
+    temperature: 0.1,
   });
 
-  if (!resp.ok) {
-    const body = await resp.text();
-    throw new Error(`${resp.status} ${body}`);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const resp = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: payload,
+    });
+
+    if (resp.status === 429) {
+      const body = await resp.text();
+      const waitMs = parseRetryAfterMs(body);
+      console.info(
+        '[scorer] rate-limited, waiting %ds…',
+        Math.ceil(waitMs / 1000)
+      );
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+
+    if (!resp.ok) {
+      const body = await resp.text();
+      throw new Error(`${resp.status} ${body}`);
+    }
+
+    const data = (await resp.json()) as {
+      choices: { message: { content: string } }[];
+    };
+    return data.choices[0]?.message.content ?? '';
   }
 
-  const data = (await resp.json()) as {
-    choices: { message: { content: string } }[];
-  };
-  return data.choices[0]?.message.content ?? '';
+  throw new Error('exceeded retry limit');
 }
 
 export async function scoreJob(job: PipelineJob): Promise<ScoreResult | null> {
