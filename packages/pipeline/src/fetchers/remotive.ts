@@ -16,9 +16,9 @@ const ResponseSchema = z.object({
   jobs: z.array(z.unknown()),
 });
 
-export async function fetchRemotive(
+export const fetchRemotive = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       'https://remotive.com/api/remote-jobs?category=software-dev',
@@ -52,4 +52,4 @@ export async function fetchRemotive(
     console.error('[remotive] fetch failed:', err);
     return [];
   }
-}
+};

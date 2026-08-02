@@ -21,10 +21,10 @@ const ResponseSchema = z.object({
   jobs: z.array(z.unknown()),
 });
 
-async function fetchCompany(
+const fetchCompany = async (
   slug: string,
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs?content=true`,
@@ -66,11 +66,11 @@ async function fetchCompany(
     console.error(`[greenhouse:${slug}] fetch failed:`, err);
     return [];
   }
-}
+};
 
-export async function fetchGreenhouse(
+export const fetchGreenhouse = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   const db = getDb();
   const rows = await db
     .select({ slug: companies.slug })
@@ -94,4 +94,4 @@ export async function fetchGreenhouse(
     }
   }
   return results;
-}
+};

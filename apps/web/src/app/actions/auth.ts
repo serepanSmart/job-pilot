@@ -13,10 +13,10 @@ export interface LoginState {
   readonly error?: string;
 }
 
-export async function login(
+export const login = async (
   _previous: LoginState,
   formData: FormData
-): Promise<LoginState> {
+): Promise<LoginState> => {
   const password = formData.get('password');
   const next = formData.get('next');
 
@@ -43,10 +43,10 @@ export async function login(
       : '/';
 
   redirect(target);
-}
+};
 
-export async function logout(): Promise<void> {
+export const logout = async (): Promise<void> => {
   const store = await cookies();
   store.delete(SESSION_COOKIE);
   redirect('/login');
-}
+};

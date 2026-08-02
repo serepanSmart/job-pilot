@@ -15,10 +15,10 @@ const notesInput = z.object({
   notes: z.string().max(10_000),
 });
 
-export async function setJobStatus(
+export const setJobStatus = async (
   id: string,
   status: string
-): Promise<{ readonly error?: string; readonly ok: boolean }> {
+): Promise<{ readonly error?: string; readonly ok: boolean }> => {
   const parsed = statusInput.safeParse({ id, status });
   if (!parsed.success) {
     return { error: 'Invalid status update.', ok: false };
@@ -45,12 +45,12 @@ export async function setJobStatus(
   revalidatePath(`/job/${parsed.data.id}`);
 
   return { ok: true };
-}
+};
 
-export async function setJobNotes(
+export const setJobNotes = async (
   id: string,
   notes: string
-): Promise<{ readonly error?: string; readonly ok: boolean }> {
+): Promise<{ readonly error?: string; readonly ok: boolean }> => {
   const parsed = notesInput.safeParse({ id, notes });
   if (!parsed.success) {
     return { error: 'Notes are too long.', ok: false };
@@ -64,4 +64,4 @@ export async function setJobNotes(
   revalidatePath(`/job/${parsed.data.id}`);
 
   return { ok: true };
-}
+};

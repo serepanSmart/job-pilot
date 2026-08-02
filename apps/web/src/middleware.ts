@@ -4,7 +4,7 @@ import { SESSION_COOKIE, isSessionTokenValid } from '@/lib/session';
 
 const PUBLIC_PATHS = new Set(['/login']);
 
-export async function middleware(request: NextRequest) {
+export const middleware = async (request: NextRequest) => {
   const { pathname, search } = request.nextUrl;
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
+};
 
 export const config = {
   matcher: [

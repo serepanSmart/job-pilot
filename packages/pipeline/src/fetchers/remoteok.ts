@@ -15,9 +15,9 @@ const RawJobSchema = z.object({
   url: z.string().optional(),
 });
 
-export async function fetchRemoteOK(
+export const fetchRemoteOK = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch('https://remoteok.com/api', {
       headers: { 'User-Agent': 'JobPilot/1.0 (personal job search tool)' },
@@ -65,4 +65,4 @@ export async function fetchRemoteOK(
     console.error('[remoteok] fetch failed:', err);
     return [];
   }
-}
+};

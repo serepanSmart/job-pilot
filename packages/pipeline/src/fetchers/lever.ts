@@ -23,10 +23,10 @@ const RawPostingSchema = z.object({
   text: z.string(),
 });
 
-async function fetchCompany(
+const fetchCompany = async (
   slug: string,
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       `https://api.lever.co/v0/postings/${slug}?mode=json`,
@@ -66,9 +66,11 @@ async function fetchCompany(
     console.error(`[lever:${slug}] fetch failed:`, err);
     return [];
   }
-}
+};
 
-export async function fetchLever(signal?: AbortSignal): Promise<PipelineJob[]> {
+export const fetchLever = async (
+  signal?: AbortSignal
+): Promise<PipelineJob[]> => {
   const db = getDb();
   const rows = await db
     .select({ slug: companies.slug })
@@ -92,4 +94,4 @@ export async function fetchLever(signal?: AbortSignal): Promise<PipelineJob[]> {
     }
   }
   return results;
-}
+};

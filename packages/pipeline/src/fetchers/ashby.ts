@@ -20,10 +20,10 @@ const ResponseSchema = z.object({
   jobPostings: z.array(z.unknown()).optional().default([]),
 });
 
-async function fetchCompany(
+const fetchCompany = async (
   slug: string,
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       `https://api.ashbyhq.com/posting-api/job-board/${slug}`,
@@ -65,9 +65,11 @@ async function fetchCompany(
     console.error(`[ashby:${slug}] fetch failed:`, err);
     return [];
   }
-}
+};
 
-export async function fetchAshby(signal?: AbortSignal): Promise<PipelineJob[]> {
+export const fetchAshby = async (
+  signal?: AbortSignal
+): Promise<PipelineJob[]> => {
   const db = getDb();
   const rows = await db
     .select({ slug: companies.slug })
@@ -91,4 +93,4 @@ export async function fetchAshby(signal?: AbortSignal): Promise<PipelineJob[]> {
     }
   }
   return results;
-}
+};

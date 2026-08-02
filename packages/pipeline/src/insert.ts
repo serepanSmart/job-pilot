@@ -3,9 +3,9 @@ import type { Job, NewJob } from '@jobpilot/db';
 import { contentHash } from './dedupe';
 import type { ScoredJob } from './types';
 
-export async function insertScoredJobs(
+export const insertScoredJobs = async (
   scoredJobs: ScoredJob[]
-): Promise<Job[]> {
+): Promise<Job[]> => {
   if (!scoredJobs.length) {
     return [];
   }
@@ -31,4 +31,4 @@ export async function insertScoredJobs(
   }));
 
   return db.insert(jobs).values(toInsert).onConflictDoNothing().returning();
-}
+};

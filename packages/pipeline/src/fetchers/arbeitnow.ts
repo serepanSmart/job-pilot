@@ -19,9 +19,9 @@ const ResponseSchema = z.object({
   data: z.array(z.unknown()),
 });
 
-export async function fetchArbeitnow(
+export const fetchArbeitnow = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch('https://www.arbeitnow.com/api/job-board-api', {
       signal,
@@ -57,4 +57,4 @@ export async function fetchArbeitnow(
     console.error('[arbeitnow] fetch failed:', err);
     return [];
   }
-}
+};
