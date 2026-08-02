@@ -63,6 +63,11 @@ The job title must indicate a Frontend, React, UI, Full-stack web, or AI-native 
 An "AI Engineer" building user-facing AI products with React/TypeScript is a GOOD fit (score normally).
 An "AI Engineer" training models, managing ML pipelines, or doing MLOps is NOT a fit (score 0-20).
 
+HARD REJECTION (score 0-20 regardless of skills):
+- Job requires relocation, is on-site, or hybrid
+- Job is US-only or requires US work authorization
+- Job is not a frontend/React/UI/full-stack web role
+
 Scoring scale:
 - 80-100: Excellent fit - core frontend skills present, EU/global remote, timezone OK
 - 65-79: Good fit - most frontend skills match, minor gaps acceptable

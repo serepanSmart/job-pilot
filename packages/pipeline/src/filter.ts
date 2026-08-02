@@ -12,7 +12,7 @@ const FRONTEND_IN_DESC_RE =
 const REJECT_MOBILE_RE = /\breact native\b/i;
 
 const REJECT_LOCATION_RE =
-  /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required/i;
+  /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required|\brelocation\b/i;
 
 const REJECT_DOU_RE = /офіс|офісна|в офіс/i;
 
@@ -35,7 +35,7 @@ export const passesTitleFilter = (job: PipelineJob): boolean => {
 };
 
 export const passesLocationFilter = (job: PipelineJob): boolean => {
-  const text = `${job.description} ${job.locationPolicy ?? ''}`;
+  const text = `${job.role} ${job.description} ${job.locationPolicy ?? ''}`;
   if (REJECT_LOCATION_RE.test(text)) {
     return false;
   }
