@@ -60,13 +60,15 @@ triage the Inbox.**
      from the local ones.
    - Never echo a secret into chat either. If a real credential does reach the
      transcript, say so plainly and rotate it.
-8. **All LLM calls go through the EPAM CodeMie gateway — never a direct
-   Anthropic credential.** The dev machine has a work **Enterprise**
-   `ANTHROPIC_API_KEY` exported in the shell; a zero-arg Anthropic SDK client
-   or any ambient-key read would bill Unity silently. The pipeline and skills
-   must use only `JOBPILOT_CODEMIE_TOKEN` with the CodeMie base URL. No
-   `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or `CLAUDE_CODE_OAUTH_TOKEN`
-   — see [LLM access](#llm-access--read-before-touching-scoring-or-tailoring).
+8. **Never use a direct Anthropic credential for pipeline LLM calls.** The dev
+   machine has a work **Enterprise** `ANTHROPIC_API_KEY` exported in the shell;
+   a zero-arg Anthropic SDK client or any ambient-key read would bill Unity
+   silently. Pipeline scoring uses **Groq** (`GROQ_API_KEY`, model
+   `llama-3.1-8b-instant`) — a free-tier external provider with no token
+   rotation burden. Tailoring skills still use `JOBPILOT_CODEMIE_TOKEN` via
+   CodeMie gateway. No `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or
+   `CLAUDE_CODE_OAUTH_TOKEN` in the pipeline — see [LLM
+   access](#llm-access--read-before-touching-scoring-or-tailoring).
 
 ## Repo layout & stack
 
@@ -96,41 +98,31 @@ TypeScript is capped below 6.1 because `typescript-eslint` 8.x requires
 
 ## LLM access — read before touching scoring or tailoring
 
-Model classes: **Haiku-class for scoring**, **Sonnet-class for tailoring**.
-Both go behind an `LlmScorer` interface so the backend can be swapped.
+Two providers, split by task:
 
-### Credentials: CodeMie gateway only
+| Task | Provider | Model | Credential |
+|---|---|---|---|
+| **Scoring** (pipeline) | Groq (free tier) | `llama-3.1-8b-instant` | `GROQ_API_KEY` |
+| **Tailoring** (skills) | EPAM CodeMie gateway | Sonnet-class | `JOBPILOT_CODEMIE_TOKEN` |
 
-**This is hard constraint #8 in code form.** All LLM calls use the EPAM
-CodeMie gateway — the Anthropic SDK pointed at the CodeMie base URL:
+### Scoring: Groq
 
-```ts
-import Anthropic from '@anthropic-ai/sdk';
+The pipeline scorer (`packages/pipeline/src/scorer.ts`) calls the Groq
+OpenAI-compatible API directly. `GROQ_API_KEY` is a free-tier key with no
+expiration burden — stable for CI. It must **never** fall back to Anthropic
+SDK or read `ANTHROPIC_API_KEY`.
 
-const token = process.env['JOBPILOT_CODEMIE_TOKEN'];
-if (!token) throw new Error('JOBPILOT_CODEMIE_TOKEN is not set');
+### Tailoring: CodeMie gateway
 
-const client = new Anthropic({
-  apiKey: token,
-  baseURL: 'https://codemie.lab.epam.com/code-assistant-api',
-});
-```
+The `/tailor-application` skill uses the EPAM CodeMie gateway (Anthropic SDK
+with custom `baseURL`). `JOBPILOT_CODEMIE_TOKEN` is the SSO bearer token from
+`codemie profile status` — rotate daily (expires ~24h) during local use.
 
-`LlmScorer` reads **only** `JOBPILOT_CODEMIE_TOKEN` and throws a clear error
-when it is not set. It must **never** construct a zero-arg `new Anthropic()`
-or read `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or
-`CLAUDE_CODE_OAUTH_TOKEN`.
+### Hard rule (both paths)
 
-Why this matters: the work Enterprise `ANTHROPIC_API_KEY` is exported in the
-shell. A zero-arg client or ambient-key read silently uses it and bills Unity
-with no error and no visible sign.
-
-`JOBPILOT_CODEMIE_TOKEN` is obtained from `codemie profile status` — the same
-SSO bearer token the `jobpilot` launcher uses. Rotate it daily (it expires in
-~24h) during local development; Phase 4 will decide the CI/CD credential
-strategy when the GitHub Actions workflow is built.
-
-Phase 2 needs no LLM at all.
+Never construct a zero-arg `new Anthropic()` or read `ANTHROPIC_API_KEY`,
+`ANTHROPIC_AUTH_TOKEN`, or `CLAUDE_CODE_OAUTH_TOKEN`. The dev machine exports
+a work Enterprise key; using it silently bills Unity.
 
 ### Interactive sessions: launch with `jobpilot`, never plain `claude`
 
