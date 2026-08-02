@@ -3,13 +3,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { tokens } from '@/theme/tokens';
 
-export function ScoreRing({
+export const ScoreRing = ({
   score,
   size = 48,
 }: {
   readonly score: number | null;
   readonly size?: number;
-}) {
+}) => {
   const strong = score !== null && score >= SCORE_STRONG;
 
   return (
@@ -53,5 +53,5 @@ export function ScoreRing({
       </Box>
     </Box>
   );
-}
+};
 ScoreRing.displayName = 'ScoreRing';

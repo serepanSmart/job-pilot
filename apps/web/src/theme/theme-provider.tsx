@@ -5,16 +5,16 @@ import { ThemeProvider } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { theme } from './theme';
 
-export function AppThemeProvider({
+export const AppThemeProvider = ({
   children,
 }: {
   readonly children: ReactNode;
-}) {
+}) => {
   return (
     <ThemeProvider theme={theme} defaultMode="dark">
       <CssBaseline />
       {children}
     </ThemeProvider>
   );
-}
+};
 AppThemeProvider.displayName = 'AppThemeProvider';

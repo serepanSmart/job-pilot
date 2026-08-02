@@ -12,7 +12,7 @@ type Props = Omit<
   readonly text: string;
 };
 
-export function TruncatedText({ text, ...typographyProps }: Props) {
+export const TruncatedText = ({ text, ...typographyProps }: Props) => {
   const [truncated, setTruncated] = useState(false);
 
   const measure = useCallback(
@@ -45,5 +45,5 @@ export function TruncatedText({ text, ...typographyProps }: Props) {
       </Typography>
     </Tooltip>
   );
-}
+};
 TruncatedText.displayName = 'TruncatedText';

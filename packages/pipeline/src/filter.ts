@@ -17,14 +17,14 @@ const JUNIOR_RE =
 
 const MAX_AGE_MS = 21 * 24 * 60 * 60 * 1000;
 
-export function passesTitleFilter(job: PipelineJob): boolean {
+export const passesTitleFilter = (job: PipelineJob): boolean => {
   if (REJECT_MOBILE_RE.test(job.role)) {
     return false;
   }
   return TITLE_RE.test(job.role) || REACT_DESC_RE.test(job.description);
-}
+};
 
-export function passesLocationFilter(job: PipelineJob): boolean {
+export const passesLocationFilter = (job: PipelineJob): boolean => {
   const text = `${job.description} ${job.locationPolicy ?? ''}`;
   if (REJECT_LOCATION_RE.test(text)) {
     return false;
@@ -33,24 +33,24 @@ export function passesLocationFilter(job: PipelineJob): boolean {
     return false;
   }
   return true;
-}
+};
 
-export function passesAgeFilter(job: PipelineJob): boolean {
+export const passesAgeFilter = (job: PipelineJob): boolean => {
   if (job.postedAt === null) {
     return true;
   }
   return Date.now() - job.postedAt.getTime() <= MAX_AGE_MS;
-}
+};
 
-export function passesLevelFilter(job: PipelineJob): boolean {
+export const passesLevelFilter = (job: PipelineJob): boolean => {
   return !JUNIOR_RE.test(job.role);
-}
+};
 
-export function hardFilter(job: PipelineJob): boolean {
+export const hardFilter = (job: PipelineJob): boolean => {
   return (
     passesTitleFilter(job) &&
     passesLocationFilter(job) &&
     passesAgeFilter(job) &&
     passesLevelFilter(job)
   );
-}
+};

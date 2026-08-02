@@ -15,14 +15,14 @@ const CV_PATH = path.resolve(DIR, '../../../data/cv-master.md');
 let cvCache: string | null = null;
 let apiKey: string | null = null;
 
-function loadCv(): string {
+const loadCv = (): string => {
   if (cvCache === null) {
     cvCache = readFileSync(CV_PATH, 'utf8');
   }
   return cvCache;
-}
+};
 
-function initApiKey(): void {
+const initApiKey = (): void => {
   if (apiKey !== null) {
     return;
   }
@@ -32,7 +32,7 @@ function initApiKey(): void {
   }
   apiKey = key;
   console.info('[scorer] model=%s', MODEL);
-}
+};
 
 const RawScoreSchema = z.object({
   matched_keywords: z.array(z.string()).default([]),
@@ -71,11 +71,11 @@ GraphQL, Angular, Vue, Svelte, Node.js backend production experience,
 AWS beyond Essentials certification, Cypress/Playwright E2E testing.
 If the job requires any of these, list them in missing_keywords.`;
 
-function buildSystemPrompt(): string {
+const buildSystemPrompt = (): string => {
   return SYSTEM_PROMPT + '\n\nCandidate CV:\n' + loadCv();
-}
+};
 
-function buildUserMessage(job: PipelineJob): string {
+const buildUserMessage = (job: PipelineJob): string => {
   return `Job: ${job.role} at ${job.company}
 Source: ${job.source}
 Location policy: ${job.locationPolicy ?? 'not specified'}
@@ -83,14 +83,14 @@ Salary: ${job.salaryInfo ?? 'not disclosed'}
 
 Description (first ${MAX_DESC_CHARS} chars):
 ${job.description.slice(0, MAX_DESC_CHARS)}`;
-}
+};
 
-function parseRetryAfterMs(body: string): number {
+const parseRetryAfterMs = (body: string): number => {
   const match = /try again in ([\d.]+)s/i.exec(body);
   return match ? Math.ceil(parseFloat(match[1]) * 1000) + 500 : 20000;
-}
+};
 
-async function callApi(job: PipelineJob): Promise<string> {
+const callApi = async (job: PipelineJob): Promise<string> => {
   if (apiKey === null) {
     throw new Error('apiKey not initialised');
   }
@@ -138,9 +138,11 @@ async function callApi(job: PipelineJob): Promise<string> {
   }
 
   throw new Error('exceeded retry limit');
-}
+};
 
-export async function scoreJob(job: PipelineJob): Promise<ScoreResult | null> {
+export const scoreJob = async (
+  job: PipelineJob
+): Promise<ScoreResult | null> => {
   try {
     initApiKey();
     const text = await callApi(job);
@@ -161,11 +163,11 @@ export async function scoreJob(job: PipelineJob): Promise<ScoreResult | null> {
     );
     return null;
   }
-}
+};
 
-export async function scoreBatch(
+export const scoreBatch = async (
   jobs: PipelineJob[]
-): Promise<(ScoreResult | null)[]> {
+): Promise<(ScoreResult | null)[]> => {
   if (!jobs.length) {
     return [];
   }
@@ -185,4 +187,4 @@ export async function scoreBatch(
   }
 
   return results;
-}
+};

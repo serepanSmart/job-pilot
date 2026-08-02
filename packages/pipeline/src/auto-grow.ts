@@ -13,7 +13,7 @@ const ATS_PATTERNS: { ats: AtsProvider; re: RegExp }[] = [
   { ats: 'ashby', re: /jobs\.ashbyhq\.com\/([^/?#]+)/ },
 ];
 
-export function extractAtsSlug(url: string): AtsMatch | null {
+export const extractAtsSlug = (url: string): AtsMatch | null => {
   for (const { ats, re } of ATS_PATTERNS) {
     const m = re.exec(url);
     if (m?.[1]) {
@@ -21,12 +21,12 @@ export function extractAtsSlug(url: string): AtsMatch | null {
     }
   }
   return null;
-}
+};
 
-export async function autoGrow(
+export const autoGrow = async (
   jobs: PipelineJob[],
   addedFrom: string
-): Promise<number> {
+): Promise<number> => {
   const candidates = new Map<string, AtsProvider>();
 
   for (const job of jobs) {
@@ -50,4 +50,4 @@ export async function autoGrow(
   await db.insert(companies).values(rows).onConflictDoNothing();
 
   return candidates.size;
-}
+};

@@ -14,20 +14,20 @@ import { companies, jobs, seenHashes } from './schema';
 import type { NewCompany, NewJob } from './schema';
 
 /** Same rule the pipeline will use: sha256 of normalized company + title. */
-function contentHash(company: string, role: string): string {
+const contentHash = (company: string, role: string): string => {
   const normalized = `${company}::${role}`.toLowerCase().replace(/\s+/g, ' ');
   return createHash('sha256').update(normalized).digest('hex');
-}
+};
 
-function daysAgo(days: number): Date {
+const daysAgo = (days: number): Date => {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date;
-}
+};
 
-function daysFromNow(days: number): Date {
+const daysFromNow = (days: number): Date => {
   return daysAgo(-days);
-}
+};
 
 type SeedJob = Omit<NewJob, 'contentHash'> & { company: string; role: string };
 
@@ -422,7 +422,7 @@ const seedCompanies: NewCompany[] = [
   { slug: 'ashby', ats: 'ashby', addedFrom: 'remotive' },
 ];
 
-async function seed(): Promise<void> {
+const seed = async (): Promise<void> => {
   const db = getDb();
 
   console.info('[seed] clearing existing rows...');
@@ -465,6 +465,6 @@ async function seed(): Promise<void> {
     seedCompanies.length,
     rows.length + 2
   );
-}
+};
 
 await seed();

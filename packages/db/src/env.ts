@@ -18,7 +18,7 @@ const dbEnvSchema = z.object({
 
 export type DbEnv = z.infer<typeof dbEnvSchema>;
 
-export function readDbEnv(): DbEnv {
+export const readDbEnv = (): DbEnv => {
   const parsed = dbEnvSchema.safeParse(process.env);
 
   if (!parsed.success) {
@@ -34,4 +34,4 @@ export function readDbEnv(): DbEnv {
   }
 
   return parsed.data;
-}
+};

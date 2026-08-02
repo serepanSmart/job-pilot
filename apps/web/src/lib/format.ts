@@ -1,12 +1,12 @@
-export function daysSince(date: Date | null): number | null {
+export const daysSince = (date: Date | null): number | null => {
   if (date === null) {
     return null;
   }
   const ms = Date.now() - date.getTime();
   return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
-}
+};
 
-export function formatAge(date: Date | null): string {
+export const formatAge = (date: Date | null): string => {
   const days = daysSince(date);
   if (days === null) {
     return 'unknown';
@@ -18,9 +18,9 @@ export function formatAge(date: Date | null): string {
     return '1 day ago';
   }
   return `${days} days ago`;
-}
+};
 
-export function formatDate(date: Date | null): string {
+export const formatDate = (date: Date | null): string => {
   if (date === null) {
     return '-';
   }
@@ -29,8 +29,8 @@ export function formatDate(date: Date | null): string {
     month: 'short',
     year: 'numeric',
   });
-}
+};
 
-export function formatSource(source: string): string {
+export const formatSource = (source: string): string => {
   return source.replace(':', ' · ');
-}
+};

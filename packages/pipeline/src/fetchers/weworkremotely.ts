@@ -19,7 +19,7 @@ const RawItemSchema = z.object({
   title: z.string().optional().default(''),
 });
 
-function parseTitle(raw: string): { company: string; role: string } | null {
+const parseTitle = (raw: string): { company: string; role: string } | null => {
   const colon = raw.indexOf(':');
   if (colon === -1) {
     return null;
@@ -30,11 +30,11 @@ function parseTitle(raw: string): { company: string; role: string } | null {
     return null;
   }
   return { company, role };
-}
+};
 
-export async function fetchWeWorkRemotely(
+export const fetchWeWorkRemotely = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       'https://weworkremotely.com/categories/remote-programming-jobs.rss',
@@ -92,4 +92,4 @@ export async function fetchWeWorkRemotely(
     console.error('[weworkremotely] fetch failed:', err);
     return [];
   }
-}
+};

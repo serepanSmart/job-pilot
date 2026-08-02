@@ -32,21 +32,21 @@ type OptimisticAction =
   | { readonly id: string; readonly type: 'remove' }
   | { readonly job: Job; readonly type: 'restore' };
 
-function byScoreThenRecency(a: Job, b: Job): number {
+const byScoreThenRecency = (a: Job, b: Job): number => {
   return (
     (b.score ?? 0) - (a.score ?? 0) ||
     b.dateFound.getTime() - a.dateFound.getTime()
   );
-}
+};
 
-function clamp(length: number, index: number): number {
+const clamp = (length: number, index: number): number => {
   if (length <= 0) {
     return 0;
   }
   return Math.min(Math.max(index, 0), length - 1);
-}
+};
 
-export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
+export const Inbox = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
   const [jobs, applyOptimistic] = useOptimistic(
     initialJobs,
     (current: Job[], action: OptimisticAction) =>
@@ -92,7 +92,7 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
   }, [lastTriage, applyOptimistic, startTransition]);
 
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
+    const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (
         target &&
@@ -129,7 +129,7 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
         default:
           break;
       }
-    }
+    };
 
     window.addEventListener('keydown', onKeyDown);
     return () => {
@@ -281,5 +281,5 @@ export function Inbox({ initialJobs }: { readonly initialJobs: Job[] }) {
       />
     </>
   );
-}
+};
 Inbox.displayName = 'Inbox';

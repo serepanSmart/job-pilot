@@ -5,14 +5,14 @@ import type { PipelineJob } from './types';
 
 const BATCH = 500;
 
-export function contentHash(company: string, role: string): string {
+export const contentHash = (company: string, role: string): string => {
   const normalized = `${company}::${role}`.toLowerCase().replace(/\s+/g, ' ');
   return createHash('sha256').update(normalized).digest('hex');
-}
+};
 
-export async function filterUnseen(
+export const filterUnseen = async (
   jobs: PipelineJob[]
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   if (!jobs.length) {
     return [];
   }
@@ -31,9 +31,9 @@ export async function filterUnseen(
   }
 
   return jobs.filter((j) => !seen.has(contentHash(j.company, j.role)));
-}
+};
 
-export async function markSeen(jobs: PipelineJob[]): Promise<void> {
+export const markSeen = async (jobs: PipelineJob[]): Promise<void> => {
   if (!jobs.length) {
     return;
   }
@@ -47,4 +47,4 @@ export async function markSeen(jobs: PipelineJob[]): Promise<void> {
       .values(rows.slice(i, i + BATCH))
       .onConflictDoNothing();
   }
-}
+};

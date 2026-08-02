@@ -18,7 +18,7 @@ const RawItemSchema = z.object({
   title: z.string().optional().default(''),
 });
 
-function parseDOUTitle(title: string): { company: string; role: string } {
+const parseDOUTitle = (title: string): { company: string; role: string } => {
   const emDash = title.indexOf(' — ');
   if (emDash !== -1) {
     return {
@@ -27,9 +27,11 @@ function parseDOUTitle(title: string): { company: string; role: string } {
     };
   }
   return { company: 'Unknown', role: title.trim() };
-}
+};
 
-export async function fetchDOU(signal?: AbortSignal): Promise<PipelineJob[]> {
+export const fetchDOU = async (
+  signal?: AbortSignal
+): Promise<PipelineJob[]> => {
   try {
     const res = await fetch(
       'https://jobs.dou.ua/vacancies/feeds/?category=Front+End',
@@ -85,4 +87,4 @@ export async function fetchDOU(signal?: AbortSignal): Promise<PipelineJob[]> {
     console.error('[dou] fetch failed:', err);
     return [];
   }
-}
+};

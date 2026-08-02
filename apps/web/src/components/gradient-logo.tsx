@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import type { TypographyProps } from '@mui/material/Typography';
 import { tokens } from '@/theme/tokens';
 
-export function GradientLogo({ variant = 'h6', ...props }: TypographyProps) {
+export const GradientLogo = ({ variant = 'h6', ...props }: TypographyProps) => {
   return (
     <Typography
       {...props}
@@ -20,5 +20,5 @@ export function GradientLogo({ variant = 'h6', ...props }: TypographyProps) {
       JobPilot
     </Typography>
   );
-}
+};
 GradientLogo.displayName = 'GradientLogo';

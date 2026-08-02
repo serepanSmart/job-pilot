@@ -37,7 +37,7 @@ interface FunnelRow {
   scored?: number;
 }
 
-function displayKey(source: string): SourceKey {
+const displayKey = (source: string): SourceKey => {
   if (source.startsWith('greenhouse:')) {
     return 'greenhouse';
   }
@@ -48,19 +48,19 @@ function displayKey(source: string): SourceKey {
     return 'ashby';
   }
   return source as SourceKey;
-}
+};
 
-function isAggregator(source: string): boolean {
+const isAggregator = (source: string): boolean => {
   return !['greenhouse', 'lever', 'ashby'].some((ats) =>
     source.startsWith(`${ats}:`)
   );
-}
+};
 
-function printFunnel(
+const printFunnel = (
   funnel: Map<SourceKey, FunnelRow>,
   newCompanies: number,
   withScoring: boolean
-): void {
+): void => {
   const COL_W = 18;
   const extraCols = withScoring ? '  Scored  Inserted' : '';
   const sep = '-'.repeat(COL_W + 30 + (withScoring ? 18 : 0));
@@ -144,9 +144,9 @@ function printFunnel(
       totalFresh
     );
   }
-}
+};
 
-async function run(): Promise<void> {
+const run = async (): Promise<void> => {
   console.info('[pipeline] Starting...');
 
   const hasToken = Boolean(process.env['GROQ_API_KEY']);
@@ -303,6 +303,6 @@ async function run(): Promise<void> {
   printFunnel(funnel, newCompanies, hasToken);
 
   await sendDigest(insertedJobs);
-}
+};
 
 await run();

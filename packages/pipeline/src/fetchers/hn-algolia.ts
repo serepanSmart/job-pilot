@@ -26,9 +26,9 @@ const CommentsResponseSchema = z.object({
 const REMOTE_RE = /\bremote\b/i;
 const ROLE_RE = /frontend|front-end|front end|react|ui engineer|web engineer/i;
 
-function parseComment(
+const parseComment = (
   comment: z.infer<typeof CommentHitSchema>
-): PipelineJob | null {
+): PipelineJob | null => {
   const raw = comment.comment_text;
   if (!raw) {
     return null;
@@ -68,11 +68,11 @@ function parseComment(
     url,
   });
   return r.success ? r.data : null;
-}
+};
 
-export async function fetchHNAlgolia(
+export const fetchHNAlgolia = async (
   signal?: AbortSignal
-): Promise<PipelineJob[]> {
+): Promise<PipelineJob[]> => {
   try {
     const headers = {
       'User-Agent':
@@ -129,4 +129,4 @@ export async function fetchHNAlgolia(
     console.error('[hn-algolia] fetch failed:', err);
     return [];
   }
-}
+};

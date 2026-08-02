@@ -47,7 +47,7 @@ const SIZE_BODY = 22;
 const SIZE_NAME = 32;
 const SIZE_SUBHEAD = 22;
 
-function h1(text: string): Paragraph {
+const h1 = (text: string): Paragraph => {
   return new Paragraph({
     children: [
       new TextRun({
@@ -61,12 +61,12 @@ function h1(text: string): Paragraph {
     spacing: { before: 200, after: 80 },
     border: { bottom: { color: '999999', size: 4, space: 2, style: 'single' } },
   });
-}
+};
 
-function body(
+const body = (
   text: string,
   opts?: { bold?: boolean; indent?: boolean }
-): Paragraph {
+): Paragraph => {
   return new Paragraph({
     children: [
       new TextRun({
@@ -79,17 +79,17 @@ function body(
     indent: opts?.indent ? { left: 360 } : undefined,
     spacing: { after: 60 },
   });
-}
+};
 
-function bullet(text: string): Paragraph {
+const bullet = (text: string): Paragraph => {
   return new Paragraph({
     bullet: { level: 0 },
     children: [new TextRun({ font: FONT, size: SIZE_BODY, text })],
     spacing: { after: 40 },
   });
-}
+};
 
-function contactLine(cv: CvData): Paragraph {
+const contactLine = (cv: CvData): Paragraph => {
   const parts = [
     cv.email,
     cv.phone,
@@ -104,9 +104,9 @@ function contactLine(cv: CvData): Paragraph {
     ],
     spacing: { after: 60 },
   });
-}
+};
 
-export function buildDocument(cv: CvData): Document {
+export const buildDocument = (cv: CvData): Document => {
   const children: Paragraph[] = [];
 
   children.push(
@@ -199,9 +199,9 @@ export function buildDocument(cv: CvData): Document {
       ],
     },
   });
-}
+};
 
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   const jsonPath = process.argv[2];
   const outPath = process.argv[3];
 
@@ -215,6 +215,6 @@ async function main(): Promise<void> {
   const buffer = await Packer.toBuffer(doc);
   writeFileSync(path.resolve(outPath), buffer);
   console.log(`Written: ${outPath}`);
-}
+};
 
 await main();

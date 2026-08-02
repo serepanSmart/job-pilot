@@ -10,7 +10,7 @@ import { useActionState } from 'react';
 import { login, type LoginState } from '@/app/actions/auth';
 import { GradientLogo } from './gradient-logo';
 
-export function LoginForm({ next }: { readonly next: string }) {
+export const LoginForm = ({ next }: { readonly next: string }) => {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
     login,
     {}
@@ -57,5 +57,5 @@ export function LoginForm({ next }: { readonly next: string }) {
       </Stack>
     </Box>
   );
-}
+};
 LoginForm.displayName = 'LoginForm';

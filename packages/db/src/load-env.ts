@@ -11,7 +11,7 @@ import path from 'node:path';
  * In CI there is no `.env` — values arrive as GitHub secrets — so a missing
  * file is not an error.
  */
-function findEnvFile(startDir: string): string | undefined {
+const findEnvFile = (startDir: string): string | undefined => {
   let dir = startDir;
 
   for (let depth = 0; depth < 5; depth += 1) {
@@ -24,7 +24,7 @@ function findEnvFile(startDir: string): string | undefined {
   }
 
   return undefined;
-}
+};
 
 const envFile = findEnvFile(process.cwd());
 

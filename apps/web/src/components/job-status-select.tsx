@@ -6,13 +6,13 @@ import TextField from '@mui/material/TextField';
 import { useState, useTransition } from 'react';
 import { setJobStatus } from '@/app/actions/jobs';
 
-export function JobStatusSelect({
+export const JobStatusSelect = ({
   jobId,
   initialStatus,
 }: {
   readonly jobId: string;
   readonly initialStatus: JobStatus;
-}) {
+}) => {
   const [status, setStatus] = useState<JobStatus>(initialStatus);
   const [pending, startTransition] = useTransition();
 
@@ -38,5 +38,5 @@ export function JobStatusSelect({
       ))}
     </TextField>
   );
-}
+};
 JobStatusSelect.displayName = 'JobStatusSelect';

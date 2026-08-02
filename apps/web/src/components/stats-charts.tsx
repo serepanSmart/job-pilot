@@ -24,11 +24,11 @@ const tooltipStyle = {
   fontSize: 12,
 };
 
-export function FunnelChart({
+export const FunnelChart = ({
   data,
 }: {
   readonly data: readonly { stage: JobStatus; count: number }[];
-}) {
+}) => {
   const rows = data.map((item) => ({
     name: JOB_STATUS_LABELS[item.stage],
     count: item.count,
@@ -61,14 +61,14 @@ export function FunnelChart({
       </ResponsiveContainer>
     </Box>
   );
-}
+};
 FunnelChart.displayName = 'FunnelChart';
 
-export function WeeklyApplicationsChart({
+export const WeeklyApplicationsChart = ({
   data,
 }: {
   readonly data: readonly { weekStart: string; count: number }[];
-}) {
+}) => {
   const rows = data.map((item) => ({
     name: new Date(item.weekStart).toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -107,5 +107,5 @@ export function WeeklyApplicationsChart({
       </ResponsiveContainer>
     </Box>
   );
-}
+};
 WeeklyApplicationsChart.displayName = 'WeeklyApplicationsChart';

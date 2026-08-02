@@ -9,7 +9,7 @@ const envSchema = z.object({
     .min(8, 'DASHBOARD_PASSWORD must be at least 8 characters'),
 });
 
-function readPassword(): string {
+const readPassword = (): string => {
   const parsed = envSchema.safeParse({
     DASHBOARD_PASSWORD: process.env.DASHBOARD_PASSWORD,
   });
@@ -22,9 +22,9 @@ function readPassword(): string {
   }
 
   return parsed.data.DASHBOARD_PASSWORD;
-}
+};
 
-async function sign(payload: string, key: string): Promise<string> {
+const sign = async (payload: string, key: string): Promise<string> => {
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(key),
@@ -42,9 +42,9 @@ async function sign(payload: string, key: string): Promise<string> {
   return Array.from(new Uint8Array(signature))
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
-}
+};
 
-function timingSafeEqual(a: string, b: string): boolean {
+const timingSafeEqual = (a: string, b: string): boolean => {
   if (a.length !== b.length) {
     return false;
   }
@@ -54,21 +54,21 @@ function timingSafeEqual(a: string, b: string): boolean {
     diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;
-}
+};
 
-export function isPasswordCorrect(candidate: string): boolean {
+export const isPasswordCorrect = (candidate: string): boolean => {
   return timingSafeEqual(candidate, readPassword());
-}
+};
 
-export async function createSessionToken(): Promise<string> {
+export const createSessionToken = async (): Promise<string> => {
   const issuedAt = Date.now().toString();
   const signature = await sign(issuedAt, readPassword());
   return `${issuedAt}.${signature}`;
-}
+};
 
-export async function isSessionTokenValid(
+export const isSessionTokenValid = async (
   token: string | undefined
-): Promise<boolean> {
+): Promise<boolean> => {
   if (!token) {
     return false;
   }
@@ -99,4 +99,4 @@ export async function isSessionTokenValid(
   }
 
   return timingSafeEqual(signature, expected);
-}
+};

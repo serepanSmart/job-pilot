@@ -8,18 +8,18 @@ const HTML_ENTITY_MAP: Record<string, string> = {
   '&apos;': "'",
 };
 
-export function stripHtml(html: string): string {
+export const stripHtml = (html: string): string => {
   return html
     .replace(/<[^>]+>/g, ' ')
     .replace(/&[a-z#0-9]+;/gi, (e) => HTML_ENTITY_MAP[e] ?? '')
     .replace(/\s+/g, ' ')
     .trim();
-}
+};
 
-export function searchText(job: {
+export const searchText = (job: {
   description: string;
   locationPolicy: string | null;
   role: string;
-}): string {
+}): string => {
   return `${job.role} ${job.description} ${job.locationPolicy ?? ''}`.toLowerCase();
-}
+};

@@ -1,13 +1,13 @@
 import Container from '@mui/material/Container';
 import type { ReactNode } from 'react';
 
-export function PageContainer({
+export const PageContainer = ({
   width = 'reading',
   children,
 }: {
   readonly width?: 'reading' | 'wide';
   readonly children: ReactNode;
-}) {
+}) => {
   return (
     <Container
       maxWidth={width === 'wide' ? 'xl' : 'md'}
@@ -16,5 +16,5 @@ export function PageContainer({
       {children}
     </Container>
   );
-}
+};
 PageContainer.displayName = 'PageContainer';

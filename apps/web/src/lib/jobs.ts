@@ -8,30 +8,30 @@ import {
 } from '@jobpilot/db';
 import { desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
-export async function getInboxJobs(): Promise<Job[]> {
+export const getInboxJobs = async (): Promise<Job[]> => {
   return getDb()
     .select()
     .from(jobs)
     .where(eq(jobs.status, 'new'))
     .orderBy(desc(jobs.score), desc(jobs.dateFound));
-}
+};
 
-export async function getJob(id: string): Promise<Job | undefined> {
+export const getJob = async (id: string): Promise<Job | undefined> => {
   const rows = await getDb()
     .select()
     .from(jobs)
     .where(eq(jobs.id, id))
     .limit(1);
   return rows[0];
-}
+};
 
-export async function getPipelineJobs(): Promise<Job[]> {
+export const getPipelineJobs = async (): Promise<Job[]> => {
   return getDb()
     .select()
     .from(jobs)
     .where(inArray(jobs.status, [...PIPELINE_STATUSES]))
     .orderBy(desc(jobs.score));
-}
+};
 
 export type StatusCounts = Record<JobStatus, number>;
 
@@ -47,16 +47,16 @@ export interface Stats {
   readonly weekly: readonly WeeklyApplications[];
 }
 
-function mondayOf(date: Date): string {
+const mondayOf = (date: Date): string => {
   const copy = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   );
   const offset = (copy.getUTCDay() + 6) % 7;
   copy.setUTCDate(copy.getUTCDate() - offset);
   return copy.toISOString().slice(0, 10);
-}
+};
 
-export async function getStats(): Promise<Stats> {
+export const getStats = async (): Promise<Stats> => {
   const db = getDb();
 
   const [statusRows, appliedRows] = await Promise.all([
@@ -120,4 +120,4 @@ export async function getStats(): Promise<Stats> {
     .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
 
   return { counts, funnel, total, weekly };
-}
+};

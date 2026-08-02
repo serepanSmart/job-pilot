@@ -8,7 +8,7 @@ interface DigestJob {
   verdict: string | null;
 }
 
-function scoreColor(score: number): string {
+const scoreColor = (score: number): string => {
   if (score >= 80) {
     return '#34D399';
   }
@@ -16,9 +16,9 @@ function scoreColor(score: number): string {
     return '#FBBF24';
   }
   return '#FB7185';
-}
+};
 
-function buildHtml(jobs: DigestJob[], dashboardUrl: string): string {
+const buildHtml = (jobs: DigestJob[], dashboardUrl: string): string => {
   const rows = jobs
     .map(
       (j) => `
@@ -62,9 +62,9 @@ function buildHtml(jobs: DigestJob[], dashboardUrl: string): string {
   </div>
 </body>
 </html>`;
-}
+};
 
-export async function sendDigest(jobs: DigestJob[]): Promise<void> {
+export const sendDigest = async (jobs: DigestJob[]): Promise<void> => {
   if (!jobs.length) {
     return;
   }
@@ -112,4 +112,4 @@ export async function sendDigest(jobs: DigestJob[]): Promise<void> {
   }
 
   console.info('[digest] sent to %s — %d job(s)', to, jobs.length);
-}
+};

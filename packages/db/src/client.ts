@@ -5,10 +5,10 @@ import * as schema from './schema';
 
 export type Database = ReturnType<typeof createDb>;
 
-function createDb() {
+const createDb = () => {
   const { DATABASE_URL } = readDbEnv();
   return drizzle(neon(DATABASE_URL), { schema });
-}
+};
 
 let cached: Database | undefined;
 
@@ -17,7 +17,7 @@ let cached: Database | undefined;
  * modules that transitively reach this file without DATABASE_URL set, and
  * serverless invocations should reuse the client across warm starts.
  */
-export function getDb(): Database {
+export const getDb = (): Database => {
   cached ??= createDb();
   return cached;
-}
+};

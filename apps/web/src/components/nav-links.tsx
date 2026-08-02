@@ -11,7 +11,7 @@ const NAV = [
   { href: '/stats', label: 'Stats' },
 ] as const;
 
-export function NavLinks() {
+export const NavLinks = () => {
   const pathname = usePathname();
 
   return (
@@ -49,5 +49,5 @@ export function NavLinks() {
       })}
     </Stack>
   );
-}
+};
 NavLinks.displayName = 'NavLinks';

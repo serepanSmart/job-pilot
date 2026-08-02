@@ -9,7 +9,7 @@ import { logout } from '@/app/actions/auth';
 import { GradientLogo } from './gradient-logo';
 import { NavLinks } from './nav-links';
 
-export function AppShell({ children }: { readonly children: ReactNode }) {
+export const AppShell = ({ children }: { readonly children: ReactNode }) => {
   return (
     <>
       <AppBar position="sticky">
@@ -33,5 +33,5 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
       {children}
     </>
   );
-}
+};
 AppShell.displayName = 'AppShell';

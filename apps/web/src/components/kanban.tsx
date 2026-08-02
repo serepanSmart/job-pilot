@@ -23,11 +23,11 @@ import { tokens } from '@/theme/tokens';
 import { ScoreRing } from './score-ring';
 import { TruncatedText } from './truncated-text';
 
-function isPipelineStatus(value: string): value is JobStatus {
+const isPipelineStatus = (value: string): value is JobStatus => {
   return (PIPELINE_STATUSES as readonly string[]).includes(value);
-}
+};
 
-function DraggableCard({ job }: { readonly job: Job }) {
+const DraggableCard = ({ job }: { readonly job: Job }) => {
   const { attributes, isDragging, listeners, setNodeRef, transform } =
     useDraggable({ id: job.id });
   return (
@@ -64,16 +64,16 @@ function DraggableCard({ job }: { readonly job: Job }) {
       </CardContent>
     </Card>
   );
-}
+};
 DraggableCard.displayName = 'DraggableCard';
 
-function Column({
+const Column = ({
   jobs,
   status,
 }: {
   readonly jobs: Job[];
   readonly status: JobStatus;
-}) {
+}) => {
   const { isOver, setNodeRef } = useDroppable({ id: status });
 
   return (
@@ -106,7 +106,7 @@ function Column({
       ))}
     </Box>
   );
-}
+};
 Column.displayName = 'Column';
 
 interface Move {
@@ -115,7 +115,7 @@ interface Move {
   readonly to: JobStatus;
 }
 
-export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
+export const Kanban = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
   const [jobs, applyOptimistic] = useOptimistic(
     initialJobs,
     (current: Job[], move: { readonly id: string; readonly to: JobStatus }) =>
@@ -127,7 +127,7 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
   const [moved, setMoved] = useState<Move | null>(null);
   const [, startTransition] = useTransition();
 
-  function onDragEnd(event: DragEndEvent) {
+  const onDragEnd = (event: DragEndEvent) => {
     const target = event.over?.id;
     if (typeof target !== 'string' || !isPipelineStatus(target)) {
       return;
@@ -144,9 +144,9 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
       applyOptimistic({ id: job.id, to: target });
       await setJobStatus(job.id, target);
     });
-  }
+  };
 
-  function undo() {
+  const undo = () => {
     if (!moved) {
       return;
     }
@@ -157,7 +157,7 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
       applyOptimistic({ id: job.id, to: from });
       await setJobStatus(job.id, from);
     });
-  }
+  };
 
   if (!jobs.length) {
     return (
@@ -212,5 +212,5 @@ export function Kanban({ initialJobs }: { readonly initialJobs: Job[] }) {
       />
     </>
   );
-}
+};
 Kanban.displayName = 'Kanban';
