@@ -152,8 +152,9 @@ export async function scoreBatch(
 
   for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
     const batch = jobs.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(batch.map(scoreJob));
-    results.push(...batchResults);
+    for (const job of batch) {
+      results.push(await scoreJob(job));
+    }
     console.info(
       '[scorer] %d/%d scored',
       Math.min(i + BATCH_SIZE, jobs.length),
