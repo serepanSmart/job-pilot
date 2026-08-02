@@ -4,11 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import type { PipelineJob, ScoreResult } from './types';
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'llama-3.3-70b-versatile';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 3000;
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const CV_PATH = path.resolve(DIR, '../../../data/cv-master.md');
@@ -27,9 +26,9 @@ function initApiKey(): void {
   if (apiKey !== null) {
     return;
   }
-  const key = process.env['GEMINI_API_KEY'];
+  const key = process.env['GROQ_API_KEY'];
   if (!key) {
-    throw new Error('GEMINI_API_KEY is not set');
+    throw new Error('GROQ_API_KEY is not set');
   }
   apiKey = key;
   console.info('[scorer] model=%s', MODEL);
@@ -90,7 +89,7 @@ async function callApi(job: PipelineJob): Promise<string> {
   if (apiKey === null) {
     throw new Error('apiKey not initialised');
   }
-  const resp = await fetch(GEMINI_URL, {
+  const resp = await fetch(GROQ_URL, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -104,6 +103,7 @@ async function callApi(job: PipelineJob): Promise<string> {
       ],
       max_tokens: 512,
       response_format: { type: 'json_object' },
+      temperature: 0.1,
     }),
   });
 

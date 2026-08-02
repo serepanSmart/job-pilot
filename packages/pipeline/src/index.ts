@@ -149,11 +149,11 @@ function printFunnel(
 async function run(): Promise<void> {
   console.info('[pipeline] Starting...');
 
-  const hasToken = Boolean(process.env['GEMINI_API_KEY']);
+  const hasToken = Boolean(process.env['GROQ_API_KEY']);
 
   if (!hasToken) {
     console.warn(
-      '[pipeline] GEMINI_API_KEY not set — scoring skipped, jobs will not be inserted'
+      '[pipeline] GROQ_API_KEY not set — scoring skipped, jobs will not be inserted'
     );
   }
 
