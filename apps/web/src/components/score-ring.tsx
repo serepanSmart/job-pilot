@@ -1,4 +1,4 @@
-import { SCORE_STRONG } from '@jobpilot/db';
+import { SCORE_STRONG, SCORE_THRESHOLD } from '@jobpilot/db';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { tokens } from '@/theme/tokens';
@@ -11,6 +11,25 @@ export const ScoreRing = ({
   readonly size?: number;
 }) => {
   const strong = score !== null && score >= SCORE_STRONG;
+  const medium = score !== null && !strong && score >= SCORE_THRESHOLD;
+
+  let ringColor: Record<string, string>;
+  if (strong) {
+    ringColor = { backgroundColor: tokens.status.success };
+  } else if (medium) {
+    ringColor = { backgroundColor: tokens.status.warning };
+  } else {
+    ringColor = { backgroundImage: tokens.gradient };
+  }
+
+  let textColor: string;
+  if (strong) {
+    textColor = tokens.status.success;
+  } else if (medium) {
+    textColor = tokens.status.warning;
+  } else {
+    textColor = tokens.text.primary;
+  }
 
   return (
     <Box
@@ -23,9 +42,7 @@ export const ScoreRing = ({
         padding: '2px',
         display: 'grid',
         placeItems: 'center',
-        ...(strong
-          ? { backgroundColor: tokens.status.success }
-          : { backgroundImage: tokens.gradient }),
+        ...ringColor,
       }}
     >
       <Box
@@ -45,7 +62,7 @@ export const ScoreRing = ({
             fontWeight: 600,
             fontSize: size * 0.34,
             lineHeight: 1,
-            color: strong ? tokens.status.success : tokens.text.primary,
+            color: textColor,
           }}
         >
           {score ?? '-'}

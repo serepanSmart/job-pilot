@@ -166,13 +166,30 @@ export default async function JobPage({
             <Typography variant="subtitle2" gutterBottom>
               Job description
             </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ whiteSpace: 'pre-wrap' }}
-            >
-              {job.description || 'No description captured.'}
-            </Typography>
+            {job.description ? (
+              <Box
+                sx={{
+                  typography: 'body2',
+                  color: 'text.secondary',
+                  '& p': { mb: 1 },
+                  '& ul, & ol': { pl: 3, mb: 1 },
+                  '& li': { mb: 0.5 },
+                  '& a': { color: 'primary.main' },
+                  '& strong, & b': { fontWeight: 600 },
+                  '& h1, & h2, & h3, & h4': {
+                    fontWeight: 600,
+                    mb: 1,
+                    mt: 2,
+                    color: 'text.primary',
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: job.description }}
+              />
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No description captured.
+              </Typography>
+            )}
           </CardContent>
         </Card>
       </Stack>

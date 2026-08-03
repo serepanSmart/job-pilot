@@ -13,7 +13,9 @@
       "Bash(npm run dev)",
       "Bash(npm run format)",
       "Bash(codemie profile status)",
-      "Bash(codemie profile status *)"
+      "Bash(codemie profile status *)",
+      "Bash(agent-browser:*)",
+      "Bash(npx agent-browser:*)"
     ]
   }
 }

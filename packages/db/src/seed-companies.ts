@@ -35,6 +35,16 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'lattice' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'descript' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'mercury' },
+  // Greenhouse — EU / remote-first additions
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'algolia' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'datadog' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'amplitude' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'netlify' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'typeform' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'personio' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'mixpanel' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'wise' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'gitbook' },
   // Lever
   { addedFrom: 'seed', ats: 'lever', slug: 'pitch' },
   { addedFrom: 'seed', ats: 'lever', slug: 'tines' },
@@ -44,6 +54,10 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'lever', slug: 'gem' },
   { addedFrom: 'seed', ats: 'lever', slug: 'sourcegraph' },
   { addedFrom: 'seed', ats: 'lever', slug: 'brex' },
+  // Lever — EU / remote-first additions
+  { addedFrom: 'seed', ats: 'lever', slug: 'grammarly' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'mattermost' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'klarna' },
   // Ashby
   { addedFrom: 'seed', ats: 'ashby', slug: 'ashby' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'raycast' },
@@ -57,6 +71,12 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'ashby', slug: 'inngest' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'graphite' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'liveblocks' },
+  // Ashby — EU / remote-first additions
+  { addedFrom: 'seed', ats: 'ashby', slug: 'clerk' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'neon' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'browsercompany' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'plain' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'basehub' },
 ];
 
 async function seedCompanies(): Promise<void> {

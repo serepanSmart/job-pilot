@@ -22,6 +22,8 @@ const RawItemSchema = z.object({
 const FEED_URLS = [
   'https://djinni.co/jobs/rss/?keywords=react&employment=remote',
   'https://djinni.co/jobs/rss/?keywords=frontend&employment=remote',
+  'https://djinni.co/jobs/rss/?keywords=typescript&employment=remote',
+  'https://djinni.co/jobs/rss/?keywords=next.js&employment=remote',
 ];
 
 const extractJobId = (url: string): string => {

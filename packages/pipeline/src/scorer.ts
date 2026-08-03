@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import type { PipelineJob, ScoreResult } from './types';
 
-const MODEL = 'llama-3.1-8b-instant';
+const MODEL = 'llama-3.3-70b-versatile';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 1200;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -64,7 +64,9 @@ An "AI Engineer" building user-facing AI products with React/TypeScript is a GOO
 An "AI Engineer" training models, managing ML pipelines, or doing MLOps is NOT a fit (score 0-20).
 
 HARD REJECTION (score 0-20 regardless of skills):
-- Job requires relocation, is on-site, or hybrid
+- Job is on-site or hybrid (in-office, co-located, not fully remote)
+- Job requires relocation to a specific city or country
+- location_policy shows a specific city or office location (e.g. "London, United Kingdom", "New York, NY", "San Francisco") without explicitly stating "fully remote" - treat as on-site
 - Job is US-only or requires US work authorization
 - Job is not a frontend/React/UI/full-stack web role
 
@@ -88,9 +90,14 @@ const buildSystemPrompt = (): string => {
 };
 
 const buildUserMessage = (job: PipelineJob): string => {
+  const locationNote =
+    job.locationPolicy !== null
+      ? `${job.locationPolicy} — if this is a city/country name without "remote", treat as on-site`
+      : 'not specified (assume remote OK unless description says otherwise)';
+
   return `Job: ${job.role} at ${job.company}
 Source: ${job.source}
-Location policy: ${job.locationPolicy ?? 'not specified'}
+Location policy: ${locationNote}
 Salary: ${job.salaryInfo ?? 'not disclosed'}
 
 Description (first ${MAX_DESC_CHARS} chars):

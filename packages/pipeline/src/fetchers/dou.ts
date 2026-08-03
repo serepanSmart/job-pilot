@@ -2,7 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { z } from 'zod';
 import { PipelineJobSchema } from '../types';
 import type { PipelineJob } from '../types';
-import { stripHtml } from '../utils';
+import { decodeHtmlEntities, stripHtml } from '../utils';
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -18,15 +18,27 @@ const RawItemSchema = z.object({
   title: z.string().optional().default(''),
 });
 
-const parseDOUTitle = (title: string): { company: string; role: string } => {
-  const emDash = title.indexOf(' — ');
-  if (emDash !== -1) {
-    return {
-      company: title.slice(emDash + 3).trim() || 'Unknown',
-      role: title.slice(0, emDash).trim(),
-    };
-  }
-  return { company: 'Unknown', role: title.trim() };
+const parseDOUTitle = (raw: string): { company: string; role: string } => {
+  const title = decodeHtmlEntities(raw);
+
+  const tryExtract = (
+    sep: string,
+    width: number
+  ): { company: string; role: string } | null => {
+    const idx = title.indexOf(sep);
+    if (idx === -1) return null;
+    const role = title.slice(0, idx).trim();
+    let company = title.slice(idx + width).trim();
+    const metaIdx = company.search(/, від /i);
+    if (metaIdx !== -1) company = company.slice(0, metaIdx).trim();
+    if (!role || !company) return null;
+    return { company, role };
+  };
+
+  return (
+    tryExtract(' — ', 3) ??
+    tryExtract(' в ', 3) ?? { company: 'Unknown', role: title.trim() }
+  );
 };
 
 export const fetchDOU = async (
