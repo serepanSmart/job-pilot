@@ -106,7 +106,7 @@ ${job.description.slice(0, MAX_DESC_CHARS)}`;
 
 const parseRetryAfterMs = (body: string): number => {
   const match = /try again in ([\d.]+)s/i.exec(body);
-  return match ? Math.ceil(parseFloat(match[1]) * 1000) + 500 : 20000;
+  return match ? Math.ceil(parseFloat(match[1]) * 1000) + 500 : 45000;
 };
 
 const callApi = async (job: PipelineJob): Promise<string> => {
@@ -124,7 +124,7 @@ const callApi = async (job: PipelineJob): Promise<string> => {
     temperature: 0.1,
   });
 
-  for (let attempt = 0; attempt < 4; attempt += 1) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
     const resp = await fetch(GROQ_URL, {
       method: 'POST',
       headers: {
@@ -200,7 +200,10 @@ export const scoreBatch = async (
 
   for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
     const batch = jobs.slice(i, i + BATCH_SIZE);
-    for (const job of batch) {
+    for (const [j, job] of batch.entries()) {
+      if (j > 0) {
+        await new Promise((r) => setTimeout(r, 8000));
+      }
       results.push(await scoreJob(job));
     }
     console.info(

@@ -4,7 +4,7 @@ import { companies } from './schema';
 import type { NewCompany } from './schema';
 
 const COMPANIES: NewCompany[] = [
-  // Greenhouse
+  // Greenhouse — original
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'linear' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'vercel' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'contentful' },
@@ -45,7 +45,45 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'mixpanel' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'wise' },
   { addedFrom: 'seed', ats: 'greenhouse', slug: 'gitbook' },
-  // Lever
+  // Greenhouse — expanded batch 2
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'shopify' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'zendesk' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'twilio' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'confluent' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'cockroachlabs' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'dbtlabs' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'airbyte' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'fullstory' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'asana' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'framer' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'mural' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'xero' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'monzo' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'rippling' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'hibob' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'canva' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'coda' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'shortcut' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'heap' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'grafanalabs' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'temporal' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'superhuman' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'segment' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'clickhouse' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'productboard' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'pipedrive' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'calendly' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'paddle' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'postman' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'docker' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'mozilla' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'okta' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'fastly' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'pagerduty' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'zoom' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'cloudinary' },
+  { addedFrom: 'seed', ats: 'greenhouse', slug: 'vimeo' },
+  // Lever — original
   { addedFrom: 'seed', ats: 'lever', slug: 'pitch' },
   { addedFrom: 'seed', ats: 'lever', slug: 'tines' },
   { addedFrom: 'seed', ats: 'lever', slug: 'doist' },
@@ -58,7 +96,16 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'lever', slug: 'grammarly' },
   { addedFrom: 'seed', ats: 'lever', slug: 'mattermost' },
   { addedFrom: 'seed', ats: 'lever', slug: 'klarna' },
-  // Ashby
+  // Lever — expanded batch 2
+  { addedFrom: 'seed', ats: 'lever', slug: 'close' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'hotjar' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'front' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'helpscout' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'maze' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'lokalise' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'appcues' },
+  { addedFrom: 'seed', ats: 'lever', slug: 'dovetail' },
+  // Ashby — original
   { addedFrom: 'seed', ats: 'ashby', slug: 'ashby' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'raycast' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'cal' },
@@ -77,6 +124,19 @@ const COMPANIES: NewCompany[] = [
   { addedFrom: 'seed', ats: 'ashby', slug: 'browsercompany' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'plain' },
   { addedFrom: 'seed', ats: 'ashby', slug: 'basehub' },
+  // Ashby — expanded batch 2
+  { addedFrom: 'seed', ats: 'ashby', slug: 'workos' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'dub' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'turso' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'xata' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'payload' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'hygraph' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'stytch' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'cursor' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'warp' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'langchain' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'unkey' },
+  { addedFrom: 'seed', ats: 'ashby', slug: 'tinybird' },
 ];
 
 async function seedCompanies(): Promise<void> {
