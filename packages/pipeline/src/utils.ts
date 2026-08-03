@@ -1,3 +1,27 @@
+const SLUG_NAME_OVERRIDES: Record<string, string> = {
+  '1password': '1Password',
+  browsercompany: 'The Browser Company',
+  cal: 'Cal.com',
+  clickhouse: 'ClickHouse',
+  cockroachlabs: 'Cockroach Labs',
+  dbtlabs: 'dbt Labs',
+  fullstory: 'FullStory',
+  grafanalabs: 'Grafana Labs',
+  hashicorp: 'HashiCorp',
+  helpscout: 'Help Scout',
+  hibob: 'HiBob',
+  hubspot: 'HubSpot',
+  langchain: 'LangChain',
+  mural: 'MURAL',
+  pagerduty: 'PagerDuty',
+  posthog: 'PostHog',
+  trigger: 'Trigger.dev',
+  workos: 'WorkOS',
+};
+
+export const slugToDisplayName = (slug: string): string =>
+  SLUG_NAME_OVERRIDES[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
+
 const HTML_ENTITY_MAP: Record<string, string> = {
   '&amp;': '&',
   '&lt;': '<',

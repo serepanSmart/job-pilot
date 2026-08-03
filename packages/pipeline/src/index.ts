@@ -2,7 +2,7 @@ import './env';
 
 import { SCORE_THRESHOLD } from '@jobpilot/db';
 import { hardFilter } from './filter';
-import { filterUnseen, markSeen } from './dedupe';
+import { dedupeInMemory, filterUnseen, markSeen } from './dedupe';
 import { autoGrow } from './auto-grow';
 import { sendDigest } from './digest';
 import { insertScoredJobs } from './insert';
@@ -229,7 +229,7 @@ const run = async (): Promise<void> => {
   const aggregatorJobs = allFetched.filter((j) => isAggregator(j.source));
   const newCompanies = await autoGrow(aggregatorJobs, 'auto-grow');
 
-  const filtered = allFetched.filter(hardFilter);
+  const filtered = dedupeInMemory(allFetched.filter(hardFilter));
 
   const filteredByKey = new Map<SourceKey, number>();
   for (const job of filtered) {

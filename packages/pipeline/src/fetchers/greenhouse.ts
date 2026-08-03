@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getDb, companies } from '@jobpilot/db';
 import { PipelineJobSchema } from '../types';
 import type { PipelineJob } from '../types';
-import { stripHtml } from '../utils';
+import { slugToDisplayName, stripHtml } from '../utils';
 
 const RawJobSchema = z.object({
   absolute_url: z.string(),
@@ -51,7 +51,7 @@ const fetchCompany = async (
         : null;
 
       const r = PipelineJobSchema.safeParse({
-        company: slug,
+        company: slugToDisplayName(slug),
         description: stripHtml(j.content),
         locationPolicy,
         postedAt: j.updated_at ?? null,

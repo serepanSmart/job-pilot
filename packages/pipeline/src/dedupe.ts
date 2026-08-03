@@ -3,6 +3,32 @@ import { inArray } from 'drizzle-orm';
 import { getDb, seenHashes } from '@jobpilot/db';
 import type { PipelineJob } from './types';
 
+const LEVEL_RE =
+  /\b(senior|sr\.?|lead|principal|staff|junior|jr\.?|mid|intermediate|associate)\b/gi;
+const PUNCT_RE = /[^\w\s]/g;
+
+const fuzzyRoleKey = (company: string, role: string): string => {
+  const normRole = role
+    .toLowerCase()
+    .replace(LEVEL_RE, '')
+    .replace(PUNCT_RE, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return `${company.toLowerCase()}::${normRole}`;
+};
+
+export const dedupeInMemory = (jobs: PipelineJob[]): PipelineJob[] => {
+  const seen = new Set<string>();
+  return jobs.filter((j) => {
+    const key = fuzzyRoleKey(j.company, j.role);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 const BATCH = 500;
 
 export const contentHash = (company: string, role: string): string => {

@@ -2,8 +2,10 @@ import type { PipelineJob } from './types';
 
 const TITLE_RE = /frontend|front-end|front end|\breact\b|next\.?js\b|nextjs\b/i;
 
+const REJECT_FULLSTACK_RE = /\bfull[\s-]?stack\b/i;
+
 const GENERIC_TITLE_RE =
-  /software engineer|software developer|web engineer|ui engineer|fullstack|full-stack|full stack|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer|\btypescript\b|vue\.?js|vuejs|nuxt\.?js|nuxtjs|\bsvelte\b|\bangular\b/i;
+  /software engineer|software developer|web engineer|ui engineer|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer|\btypescript\b|vue\.?js|vuejs|nuxt\.?js|nuxtjs|\bsvelte\b|\bangular\b/i;
 
 const FRONTEND_IN_DESC_RE =
   /\breact\b|\bfrontend\b|\bfront-end\b|\bfront end\b|\bnext\.?js\b/i;
@@ -25,6 +27,9 @@ const MAX_AGE_MS = 35 * 24 * 60 * 60 * 1000;
 
 export const passesTitleFilter = (job: PipelineJob): boolean => {
   if (REJECT_MOBILE_RE.test(job.role)) {
+    return false;
+  }
+  if (REJECT_FULLSTACK_RE.test(job.role)) {
     return false;
   }
   if (TITLE_RE.test(job.role)) {

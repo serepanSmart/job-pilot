@@ -26,7 +26,8 @@ The user provides either:
 2. **Extract fields.** Parse the text for: `company`, `role`, `url` (use the given URL or `manual:<slug>`), `source` (`manual`), `description`, `salary_info`, `location_policy`, `posted_at` (today's date as ISO string).
 
 3. **Hard filter.** Apply the same rules as the pipeline:
-   - Must contain `frontend | front-end | react | ui engineer | web engineer | fullstack` in title (or react in description).
+   - Title must contain `frontend | front-end | react | next.js | ui engineer | web engineer` (auto-pass), OR title matches a secondary pattern (AI engineer, TypeScript developer, etc.) with `react | frontend | next.js` in the description.
+   - Must NOT contain `full-stack | fullstack | full stack` in title.
    - Must NOT contain `hybrid | on-site | onsite | US only | must be located in | US work authorization | W2 | relocation required | React Native`.
    - Must NOT be junior/intern.
    - If it fails, tell the user why and stop.

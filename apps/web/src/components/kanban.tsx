@@ -45,7 +45,7 @@ const DraggableCard = ({ job }: { readonly job: Job }) => {
           : undefined,
       }}
     >
-      <CardContent sx={{ p: 1.75, '&:last-child': { pb: 1.75 } }}>
+      <CardContent dense>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <ScoreRing score={job.score} size={36} />
           <Box sx={{ flex: 1, minWidth: 0 }}>

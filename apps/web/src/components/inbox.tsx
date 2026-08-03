@@ -89,7 +89,7 @@ export const Inbox = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
       applyOptimistic({ job, type: 'restore' });
       await setJobStatus(job.id, 'new');
     });
-  }, [lastTriage, applyOptimistic, startTransition]);
+  }, [lastTriage, applyOptimistic]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
