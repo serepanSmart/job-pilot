@@ -1,13 +1,12 @@
 import type { PipelineJob } from './types';
 
-const TITLE_RE =
-  /frontend|front-end|front end|\breact\b|ui engineer|web engineer|fullstack|full-stack|full stack/i;
+const TITLE_RE = /frontend|front-end|front end|\breact\b|next\.?js\b|nextjs\b/i;
 
 const GENERIC_TITLE_RE =
-  /software engineer|software developer|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer/i;
+  /software engineer|software developer|web engineer|ui engineer|fullstack|full-stack|full stack|ai[\s-]*(native[\s-]*)?engineer|ai[\s-]*(native[\s-]*)?developer|\btypescript\b|vue\.?js|vuejs|nuxt\.?js|nuxtjs|\bsvelte\b|\bangular\b/i;
 
 const FRONTEND_IN_DESC_RE =
-  /\breact\b|\bfrontend\b|\bfront-end\b|\bfront end\b/i;
+  /\breact\b|\bfrontend\b|\bfront-end\b|\bfront end\b|\bnext\.?js\b/i;
 
 const REJECT_MOBILE_RE = /\breact native\b/i;
 
@@ -15,6 +14,9 @@ const REJECT_LOCATION_RE =
   /\bhybrid\b|on-site|onsite|\bus only\b|must be located in|us work authorization|\bw-2\b|\bw2\b|relocation required|requires relocation|relocation to\b|must relocate/i;
 
 const REJECT_DOU_RE = /офіс|офісна|в офіс/i;
+
+const REJECT_DOU_ENGLISH_RE =
+  /\boffice\b|\b(kyiv|kharkiv|lviv|dnipro|odesa|odessa)\b/i;
 
 const JUNIOR_RE =
   /\bjunior\b|\bjr\.?\b|\bintern(ship)?\b|entry[\s-]level|graduate program/i;
@@ -40,6 +42,9 @@ export const passesLocationFilter = (job: PipelineJob): boolean => {
     return false;
   }
   if (REJECT_DOU_RE.test(text)) {
+    return false;
+  }
+  if (job.source === 'dou' && REJECT_DOU_ENGLISH_RE.test(text)) {
     return false;
   }
   return true;

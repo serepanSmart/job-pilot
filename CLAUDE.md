@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication
+
+**Always respond in Russian.** The user communicates in Russian/Ukrainian; all assistant responses must be in Russian regardless of what language the user writes in.
+
 ## Project status
 
 **Phase 5 complete.** All phases 0–5 are done. DB, full UI, auth, discovery pipeline, LLM scoring, digest email, GitHub Actions cron, and the application factory skills are in place.
@@ -34,9 +38,12 @@ triage the Inbox.**
 
 ## Hard constraints (never violate)
 
-1. **No scraping or automating LinkedIn, Indeed, Djinni, Wellfound, or
+1. **No scraping or automating LinkedIn, Indeed, Wellfound, or
    Jobgether** (ToS risk). Their email alerts arriving in Gmail may be parsed in
    a later phase; the sites themselves are off limits.
+   **Djinni exception:** reading Djinni's public RSS feeds
+   (`djinni.co/jobs/rss/`) is permitted — this is standard RSS reader behavior,
+   not site automation. Direct web scraping of Djinni pages remains off limits.
 2. **Never invent facts** for the CV or cover letters — only rephrase and
    re-prioritize content from the master CV. Respect its "known gaps" section.
    **Fabrication is a critical bug.**
@@ -394,6 +401,7 @@ resurface** — that is what this table is for.
 | WeWorkRemotely | RSS, programming category |
 | HN Who is Hiring | `https://hn.algolia.com/api/v1/` — locate the latest monthly thread, parse comments for REMOTE + frontend/react |
 | DOU | RSS, Front End category (`jobs.dou.ua/vacancies/feeds/` — **verify exact URL/params at build time**); expect many office/hybrid postings, hard filters must catch them |
+| Djinni | RSS feeds — `https://djinni.co/jobs/rss/?keywords=react&employment=remote` and `?keywords=frontend&employment=remote`; title = role only (no company in feed — extracted best-effort from description HTML, fallback `djinni-{jobId}`) |
 | Greenhouse | `https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true` |
 | Lever | `https://api.lever.co/v0/postings/{company}?mode=json` |
 | Ashby | `https://api.ashbyhq.com/posting-api/job-board/{company}` |
@@ -403,7 +411,7 @@ resurface** — that is what this table is for.
   reviews it.**
 - **Auto-grow:** when any aggregator job links to a greenhouse/lever/ashby board,
   extract the company slug and insert it into `companies`.
-- **Not direct sources** (email-alert phase later): Djinni, LinkedIn, Wellfound,
+- **Not direct sources** (email-alert phase later): LinkedIn, Wellfound,
   Jobgether.
 
 ## Pipeline stages (`packages/pipeline`)

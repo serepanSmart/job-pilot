@@ -13,6 +13,7 @@ import { fetchArbeitnow } from './fetchers/arbeitnow';
 import { fetchWeWorkRemotely } from './fetchers/weworkremotely';
 import { fetchHNAlgolia } from './fetchers/hn-algolia';
 import { fetchDOU } from './fetchers/dou';
+import { fetchDjinni } from './fetchers/djinni';
 import { fetchGreenhouse } from './fetchers/greenhouse';
 import { fetchLever } from './fetchers/lever';
 import { fetchAshby } from './fetchers/ashby';
@@ -25,6 +26,7 @@ type SourceKey =
   | 'weworkremotely'
   | 'hn-algolia'
   | 'dou'
+  | 'djinni'
   | 'greenhouse'
   | 'lever'
   | 'ashby';
@@ -36,6 +38,7 @@ const SOURCE_KEYS: readonly SourceKey[] = [
   'weworkremotely',
   'hn-algolia',
   'dou',
+  'djinni',
   'greenhouse',
   'lever',
   'ashby',
@@ -99,6 +102,7 @@ const printFunnel = (
     'weworkremotely',
     'hn-algolia',
     'dou',
+    'djinni',
     'greenhouse',
     'lever',
     'ashby',
@@ -184,6 +188,7 @@ const run = async (): Promise<void> => {
     wwrJobs,
     hnJobs,
     douJobs,
+    djinniJobs,
     greenhouseJobs,
     leverJobs,
     ashbyJobs,
@@ -194,6 +199,7 @@ const run = async (): Promise<void> => {
     fetchWeWorkRemotely(signal),
     fetchHNAlgolia(signal),
     fetchDOU(signal),
+    fetchDjinni(signal),
     fetchGreenhouse(signal),
     fetchLever(signal),
     fetchAshby(signal),
@@ -208,6 +214,7 @@ const run = async (): Promise<void> => {
     ...wwrJobs,
     ...hnJobs,
     ...douJobs,
+    ...djinniJobs,
     ...greenhouseJobs,
     ...leverJobs,
     ...ashbyJobs,
