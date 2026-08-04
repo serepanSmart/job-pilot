@@ -81,11 +81,10 @@ export const fetchHNAlgolia = async (
         'Mozilla/5.0 (compatible; JobPilot/1.0; +https://github.com)',
     };
     const storiesRes = await fetch(
-      'https://hn.algolia.com/api/v1/search?' +
+      'https://hn.algolia.com/api/v1/search_by_date?' +
         new URLSearchParams({
           hitsPerPage: '5',
-          query: 'Ask HN: Who is hiring?',
-          tags: 'story',
+          tags: 'story,author_whoishiring',
         }),
       { headers, signal }
     );
@@ -96,7 +95,15 @@ export const fetchHNAlgolia = async (
     const storiesData = StoriesResponseSchema.parse(await storiesRes.json());
     const hits = storiesData.hits.flatMap((h) => {
       const p = StoryHitSchema.safeParse(h);
-      return p.success ? [p.data] : [];
+      if (!p.success) {
+        return [];
+      }
+      return (h as Record<string, unknown>)['title']
+        ?.toString()
+        .toLowerCase()
+        .includes('who is hiring')
+        ? [p.data]
+        : [];
     });
 
     if (!hits.length) {
