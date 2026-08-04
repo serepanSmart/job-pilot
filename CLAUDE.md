@@ -401,7 +401,7 @@ resurface** — that is what this table is for.
 | WeWorkRemotely | RSS, programming category |
 | HN Who is Hiring | `https://hn.algolia.com/api/v1/` — locate the latest monthly thread, parse comments for REMOTE + frontend/react |
 | DOU | RSS, Front End category (`jobs.dou.ua/vacancies/feeds/` — **verify exact URL/params at build time**); expect many office/hybrid postings, hard filters must catch them |
-| Djinni | RSS feeds — `https://djinni.co/jobs/rss/?keywords=react&employment=remote` and `?keywords=frontend&employment=remote`; title = role only (no company in feed — extracted best-effort from description HTML, fallback `djinni-{jobId}`) |
+| Djinni | RSS feed — `https://djinni.co/jobs/rss/?primary_keyword=JavaScript&employment=remote`; the `keywords=` param is ignored by Djinni — only `primary_keyword=` works; title = role only (no company in feed — extracted best-effort from description HTML, fallback `djinni-{jobId}`) |
 | Greenhouse | `https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true` |
 | Lever | `https://api.lever.co/v0/postings/{company}?mode=json` |
 | Ashby | `https://api.ashbyhq.com/posting-api/job-board/{company}` |
