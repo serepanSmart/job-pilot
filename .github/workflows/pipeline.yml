@@ -2,13 +2,13 @@ name: Pipeline
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
