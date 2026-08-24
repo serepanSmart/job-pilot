@@ -1,11 +1,8 @@
 import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { logout } from '@/app/actions/auth';
 import { GradientLogo } from './gradient-logo';
 import { NavLinks } from './nav-links';
 
@@ -20,12 +17,6 @@ export const AppShell = ({ children }: { readonly children: ReactNode }) => {
             </Link>
 
             <NavLinks />
-
-            <Box component="form" action={logout}>
-              <Button type="submit" variant="text" size="small">
-                Sign out
-              </Button>
-            </Box>
           </Toolbar>
         </Container>
       </AppBar>

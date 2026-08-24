@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import type { PipelineJob, ScoreResult } from './types';
 
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL = 'groq/compound-mini';
 const BATCH_SIZE = 5;
 const MAX_DESC_CHARS = 1200;
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -104,9 +104,15 @@ Description (first ${MAX_DESC_CHARS} chars):
 ${job.description.slice(0, MAX_DESC_CHARS)}`;
 };
 
+const QUOTA_EXHAUSTED_MS = 5 * 60 * 1000;
+
 const parseRetryAfterMs = (body: string): number => {
-  const match = /try again in ([\d.]+)s/i.exec(body);
-  return match ? Math.ceil(parseFloat(match[1]) * 1000) + 500 : 45000;
+  const minsMatch = /try again in (\d+)m/i.exec(body);
+  const secsMatch = /try again in (?:\d+m)?([\d.]+)s/i.exec(body);
+  const ms =
+    (minsMatch ? parseInt(minsMatch[1], 10) * 60_000 : 0) +
+    (secsMatch ? Math.ceil(parseFloat(secsMatch[1]) * 1000) : 0);
+  return ms > 0 ? ms + 500 : 60_000;
 };
 
 const callApi = async (job: PipelineJob): Promise<string> => {
@@ -137,6 +143,11 @@ const callApi = async (job: PipelineJob): Promise<string> => {
     if (resp.status === 429) {
       const body = await resp.text();
       const waitMs = parseRetryAfterMs(body);
+      if (waitMs >= QUOTA_EXHAUSTED_MS) {
+        throw new Error(
+          `daily quota exhausted, retry in ${Math.ceil(waitMs / 60_000)}m`
+        );
+      }
       console.info(
         '[scorer] rate-limited, waiting %ds…',
         Math.ceil(waitMs / 1000)

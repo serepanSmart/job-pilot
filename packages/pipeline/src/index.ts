@@ -256,7 +256,7 @@ const run = async (): Promise<void> => {
   }[] = [];
   let jobsToMarkSeen = freshJobs;
 
-  const SCORE_CAP = 50;
+  const SCORE_CAP = 25;
   const jobsToScore = freshJobs.slice(0, SCORE_CAP);
 
   if (freshJobs.length > SCORE_CAP) {
