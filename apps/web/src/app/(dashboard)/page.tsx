@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 import type { Metadata } from 'next';
 import { Inbox } from '@/components/inbox';
 import { PageContainer } from '@/components/page-container';
+import { RunPipelineButton } from '@/components/run-pipeline-button';
 import { getInboxJobs } from '@/lib/jobs';
 
 export const metadata: Metadata = { title: 'Inbox · JobPilot' };
@@ -16,13 +17,16 @@ export default async function InboxPage() {
       <Stack spacing={3}>
         <Stack
           direction="row"
-          sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}
+          sx={{ justifyContent: 'space-between', alignItems: 'center' }}
         >
-          <Typography variant="h5">Inbox</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {jobs.length} to triage · <kbd>j</kbd>/<kbd>k</kbd> move ·{' '}
-            <kbd>s</kbd> shortlist · <kbd>x</kbd> archive · <kbd>u</kbd> undo
-          </Typography>
+          <Stack spacing={0.5}>
+            <Typography variant="h5">Inbox</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {jobs.length} to triage · <kbd>j</kbd>/<kbd>k</kbd> move ·{' '}
+              <kbd>s</kbd> shortlist · <kbd>x</kbd> archive · <kbd>u</kbd> undo
+            </Typography>
+          </Stack>
+          <RunPipelineButton />
         </Stack>
 
         <Inbox initialJobs={jobs} />

@@ -151,8 +151,8 @@ export const Inbox = ({ initialJobs }: { readonly initialJobs: Job[] }) => {
           <Stack spacing={1}>
             <Typography variant="h6">Inbox is empty</Typography>
             <Typography variant="body2" color="text.secondary">
-              Nothing left to triage. New jobs arrive every 6 hours once the
-              pipeline is scheduled.
+              Nothing left to triage. Use "Fetch Jobs" to run the pipeline and
+              discover new roles.
             </Typography>
           </Stack>
         </CardContent>
